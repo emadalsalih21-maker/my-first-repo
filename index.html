@@ -220,7 +220,7 @@ th{font-size:.75rem;color:var(--muted);font-weight:600;letter-spacing:.02em}
     <span class="brand-mark" aria-hidden="true">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14v-5l-2-5H7l-2 5z"/><path d="M9 4h6v3H9z"/><circle cx="8" cy="17" r="2" fill="currentColor"/><circle cx="16" cy="17" r="2" fill="currentColor"/></svg>
     </span>
-    <span><span class="brand-name">هلا احمد</span><span class="brand-tag">تكسي بغداد بلمسة وحدة</span></span>
+    <span><span class="brand-name">هلا احمد</span><span class="brand-tag">تكسي البصرة بلمسة وحدة</span></span>
   </a>
   <span class="demo-badge">نسخة تجريبية</span>
   <span class="avatar" id="topAvatar" title="حسابي">م ح</span>
@@ -242,26 +242,26 @@ th{font-size:.75rem;color:var(--muted);font-weight:600;letter-spacing:.02em}
       </div>
       <div class="ride">
         <div class="map-wrap">
-          <svg id="map" viewBox="0 0 800 560" role="img" aria-label="خريطة بغداد التجريبية">
+          <svg id="map" viewBox="0 0 800 560" role="img" aria-label="خريطة البصرة التجريبية">
             <rect class="m-land" width="800" height="560"/>
             <g>
-              <rect class="m-park" x="250" y="285" width="70" height="50" rx="12"/>
-              <rect class="m-park" x="560" y="300" width="46" height="34" rx="10"/>
-              <rect class="m-park" x="120" y="150" width="54" height="40" rx="10"/>
-              <rect class="m-park" x="395" y="470" width="56" height="30" rx="10"/>
+              <rect class="m-park" x="330" y="200" width="60" height="40" rx="12"/>
+              <rect class="m-park" x="545" y="300" width="40" height="46" rx="10"/>
+              <rect class="m-park" x="200" y="380" width="60" height="40" rx="10"/>
+              <rect class="m-park" x="700" y="320" width="54" height="34" rx="10"/>
             </g>
             <g id="minor"></g>
-            <path class="m-river" d="M290 -10 C310 90 300 150 345 200 C380 240 360 300 330 360 C300 420 330 500 420 512 C520 522 560 470 540 410 C525 360 580 340 640 380 C700 420 720 500 810 545"/>
-            <text class="m-water-lbl" x="268" y="420" transform="rotate(-70 268 420)">نهر دجلة</text>
+            <path class="m-river" d="M520 -10 C540 80 560 150 580 220 C600 300 640 360 700 440 C730 480 760 520 810 560"/>
+            <text class="m-water-lbl" x="590" y="120" transform="rotate(72 590 120)">شط العرب</text>
             <g>
-              <path class="m-major" d="M30 385 C150 365 200 300 260 282 L330 272 L430 262"/>
-              <path class="m-major" d="M470 -10 C480 150 520 260 520 330 C520 380 560 420 620 440 L810 470"/>
-              <path class="m-major" d="M400 140 C480 200 560 230 640 250 L810 262"/>
-              <path class="m-major" d="M430 262 C460 300 475 340 458 392 C448 422 432 444 420 462"/>
-              <path class="m-major" d="M180 -10 C200 120 210 200 230 260 C250 330 260 420 300 570"/>
-              <path class="m-major" d="M200 112 L410 128"/>
-              <path class="m-major" d="M420 462 C380 500 330 498 278 470"/>
-              <path class="m-major" d="M-10 196 C200 172 600 170 810 152"/>
+              <path class="m-major" d="M150 90 C250 120 350 150 490 130"/>
+              <path class="m-major" d="M470 -10 C480 100 500 180 540 260 C560 300 560 360 540 570"/>
+              <path class="m-major" d="M-10 300 C200 290 400 262 555 255"/>
+              <path class="m-major" d="M120 470 C220 430 300 400 380 380 C430 365 460 350 480 345"/>
+              <path class="m-major" d="M555 255 L690 250"/>
+              <path class="m-major" d="M-10 180 C200 170 380 150 470 110"/>
+              <path class="m-major" d="M200 570 C300 480 420 430 560 420 L640 405"/>
+              <path class="m-major" d="M640 -10 C660 100 690 200 720 300 C750 380 780 430 810 460"/>
             </g>
             <g id="places"></g>
             <path id="approachPath" class="m-approach" d="" />
@@ -314,13 +314,13 @@ th{font-size:.75rem;color:var(--muted);font-weight:600;letter-spacing:.02em}
                 <b>أحمد كريم</b> <span class="muted small">★ 4.92</span>
                 <p class="small muted">تويوتا كامري 2021 · بيضاء/برتقالية</p>
               </div>
-              <span class="plate"><small>بغداد</small><span class="num">45821 أ</span></span>
+              <span class="plate"><small>البصرة</small><span class="num">45821 أ</span></span>
             </div>
             <div class="summary"><span>رقم السائق</span><b class="num" style="user-select:all">+964 771 845 2290</b></div>
             <div class="receipt small">
               <span class="muted">من</span><span id="tFrom"></span>
               <span class="muted">إلى</span><span id="tTo"></span>
-              <span class="muted">الأجرة</span><b class="num" id="tFare"></b>
+              <span class="muted">الأجرة</span><b id="tFare"></b>
             </div>
             <button class="btn btn-ghost btn-danger" id="btnCancel2">إلغاء الرحلة</button>
           </div>
@@ -330,10 +330,10 @@ th{font-size:.75rem;color:var(--muted);font-weight:600;letter-spacing:.02em}
             <div class="stars" id="stars" role="radiogroup" aria-label="التقييم"></div>
             <div><p class="small muted" style="margin-bottom:6px">إكرامية للسائق (اختياري)</p><div class="tips" id="tips"></div></div>
             <div class="receipt card" style="padding:14px">
-              <span class="muted">أجرة الرحلة</span><span class="num" id="rFare"></span>
-              <span class="muted">الإكرامية</span><span class="num" id="rTip"></span>
+              <span class="muted">أجرة الرحلة</span><span id="rFare"></span>
+              <span class="muted">الإكرامية</span><span id="rTip"></span>
               <span class="muted">طريقة الدفع</span><span id="rPay"></span>
-              <span class="total">المجموع</span><span class="total num" id="rTotal"></span>
+              <span class="total">المجموع</span><span class="total" id="rTotal"></span>
             </div>
             <p class="err" id="rErr" style="text-align:center"></p>
             <button class="btn btn-primary btn-block" id="btnFinish">تأكيد وإنهاء</button>
@@ -458,7 +458,7 @@ th{font-size:.75rem;color:var(--muted);font-weight:600;letter-spacing:.02em}
               <label class="field">السيارة<input class="input" id="dCar" value="تويوتا كامري"></label>
               <label class="field">سنة الصنع<input class="input num" id="dYear" value="2021" inputmode="numeric"></label>
               <label class="field">اللون<input class="input" id="dColor" value="بيضاء/برتقالية"></label>
-              <label class="field">رقم اللوحة<input class="input" id="dPlate" value="بغداد 45821 أ"></label>
+              <label class="field">رقم اللوحة<input class="input" id="dPlate" value="البصرة 45821 أ"></label>
             </div>
             <label class="field">رقم الحساب لتحويل الأرباح (IBAN)<input class="input ltr num" id="dIban" value="IQ98 RAFB 0000 0012 3456 789"></label>
             <button class="btn btn-primary" type="submit">حفظ البيانات</button>
@@ -490,16 +490,16 @@ const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- data ---------- */
 const PLACES = {
-  karrada:{name:'الكرادة داخل', x:478, y:330},
-  mansour:{name:'المنصور', x:222, y:248},
-  jadriya:{name:'الجادرية', x:430, y:432},
-  zayouna:{name:'زيونة', x:630, y:240},
-  kadhimiya:{name:'الكاظمية', x:206, y:92},
-  adhamiya:{name:'الأعظمية', x:410, y:100},
-  airport:{name:'مطار بغداد الدولي', x:70, y:372},
-  mutanabbi:{name:'شارع المتنبي', x:398, y:212},
-  tahrir:{name:'ساحة التحرير', x:452, y:262},
-  palestine:{name:'شارع فلسطين', x:560, y:200},
+  ashar:{name:'العشار', x:555, y:255},
+  jazair:{name:'الجزائر', x:360, y:250},
+  maqil:{name:'المعقل', x:490, y:130},
+  oldbasra:{name:'البصرة القديمة', x:470, y:345},
+  jubaila:{name:'الجبيلة', x:385, y:385},
+  hayaniya:{name:'الحيانية', x:250, y:330},
+  tanuma:{name:'التنومة', x:690, y:250},
+  zubair:{name:'الزبير', x:120, y:470},
+  airport:{name:'مطار البصرة الدولي', x:150, y:90},
+  university:{name:'جامعة البصرة', x:340, y:60},
 };
 const KM_PER_PX = 0.04;
 const TYPES = [
@@ -508,7 +508,7 @@ const TYPES = [
   {id:'family', name:'هلا عائلي', desc:'6 ركاب · مساحة للحقائب', mult:1.7, eta:7},
 ];
 const S = {
-  from:'karrada', to:'mansour', custom:null, type:'eco',
+  from:'ashar', to:'jazair', custom:null, type:'eco',
   pay:'wallet', balance:37500,
   methods:[
     {id:'cash', label:'نقداً', sub:'ادفع للسائق مباشرة'},
@@ -517,22 +517,22 @@ const S = {
     {id:'zain', label:'زين كاش', sub:'+964 780 •••• 112'},
   ],
   tx:[
-    {d:'10/11', t:'رحلة: المنصور ← الكرادة داخل', a:-9000},
+    {d:'10/11', t:'رحلة: الجزائر ← العشار', a:-9000},
     {d:'08/11', t:'شحن المحفظة', a:25000},
-    {d:'06/11', t:'رحلة: الكرادة داخل ← شارع المتنبي', a:-5500},
+    {d:'06/11', t:'رحلة: العشار ← البصرة القديمة', a:-5500},
     {d:'02/11', t:'استرجاع رحلة ملغاة', a:3000},
   ],
   history:[
-    {d:'10/11 · 8:40 م', from:'المنصور', to:'الكرادة داخل', fare:9000, km:10.4, rating:5},
-    {d:'06/11 · 4:15 م', from:'الكرادة داخل', to:'شارع المتنبي', fare:5500, km:5.0, rating:5},
-    {d:'01/11 · 11:05 ص', from:'زيونة', to:'مطار بغداد الدولي', fare:17500, km:22.9, rating:4},
+    {d:'10/11 · 8:40 م', from:'الجزائر', to:'العشار', fare:9000, km:10.4, rating:5},
+    {d:'06/11 · 4:15 م', from:'العشار', to:'البصرة القديمة', fare:5500, km:5.0, rating:5},
+    {d:'01/11 · 11:05 ص', from:'التنومة', to:'مطار البصرة الدولي', fare:17500, km:22.9, rating:4},
   ],
   rider:{name:'مصطفى حسن', phone:'+964 770 123 4567', email:'mustafa.h@example.com', emergency:'+964 780 555 0192'},
-  saved:[{k:'البيت', p:'karrada'},{k:'الشغل', p:'mansour'},{k:'بيت أهلي', p:'adhamiya'}],
+  saved:[{k:'البيت', p:'ashar'},{k:'الشغل', p:'jazair'},{k:'بيت أهلي', p:'maqil'}],
   driver:{online:true, earn:46500, trips:7, list:[
-    {t:'7:10 م', r:'الأعظمية ← شارع فلسطين', f:6500},
-    {t:'5:45 م', r:'زيونة ← الكرادة داخل', f:7000},
-    {t:'4:20 م', r:'المنصور ← الكاظمية', f:7500},
+    {t:'7:10 م', r:'المعقل ← الجبيلة', f:6500},
+    {t:'5:45 م', r:'التنومة ← العشار', f:7000},
+    {t:'4:20 م', r:'الجزائر ← الحيانية', f:7500},
   ]},
   week:[42,55,38,61,70,84,0],
 };
@@ -610,8 +610,8 @@ function renderRidePay(){
   S.methods.forEach(m=>s.add(new Option(m.id==='wallet'?`${m.label} (${fmt(S.balance)} د.ع)`:m.label,m.id)));
   s.value=S.pay;
 }
-$('#from').addEventListener('change',e=>{S.from=e.target.value; if(S.from===S.to){toast('اختار وجهة مختلفة عن نقطة الانطلاق'); S.to=S.from==='mansour'?'karrada':'mansour'; fillSelects();} renderPlan();});
-$('#to').addEventListener('change',e=>{S.to=e.target.value; if(S.from===S.to){toast('اختار وجهة مختلفة عن نقطة الانطلاق'); S.from=S.to==='karrada'?'mansour':'karrada'; fillSelects();} renderPlan();});
+$('#from').addEventListener('change',e=>{S.from=e.target.value; if(S.from===S.to){toast('اختار وجهة مختلفة عن نقطة الانطلاق'); S.to=S.from==='jazair'?'ashar':'jazair'; fillSelects();} renderPlan();});
+$('#to').addEventListener('change',e=>{S.to=e.target.value; if(S.from===S.to){toast('اختار وجهة مختلفة عن نقطة الانطلاق'); S.from=S.to==='ashar'?'jazair':'ashar'; fillSelects();} renderPlan();});
 $('#ridePay').addEventListener('change',e=>{S.pay=e.target.value;renderMethods();});
 svg.addEventListener('click',e=>{
   if(step!=='plan') return;
@@ -628,7 +628,7 @@ function setStep(s){step=s; $$('#panel [data-step]').forEach(el=>el.hidden=el.da
 function clearFlow(){timers.forEach(clearTimeout);timers=[];if(anim)cancelAnimationFrame(anim);anim=null;}
 function animateAlong(path,dur,onP,onDone){
   const L=path.getTotalLength(), t0=performance.now(), car=$('#car'), rot=$('#carRot');
-  car.hidden=false;
+  car.removeAttribute('hidden');
   (function f(now){
     const t=Math.min(1,(now-t0)/dur), p=path.getPointAtLength(L*t), p2=path.getPointAtLength(Math.min(L,L*t+1));
     place(car,p); const ang=Math.atan2(p2.y-p.y,p2.x-p.x)*180/Math.PI; if(L*t<L-1) rot.setAttribute('transform',`rotate(${ang})`);
@@ -640,11 +640,11 @@ $('#btnRequest').addEventListener('click',()=>{
   const {a,b,km,min}=tripInfo();
   current={from:pt(S.from).name,to:pt(S.to).name,km,min,fare:fare(km,S.type),type:S.type,pay:S.pay};
   setStep('search');
-  const pu=$('#pulse'); pu.setAttribute('cx',a.x); pu.setAttribute('cy',a.y); pu.hidden=false;
+  const pu=$('#pulse'); pu.setAttribute('cx',a.x); pu.setAttribute('cy',a.y); pu.removeAttribute('hidden');
   timers.push(setTimeout(startApproach, reduce?600:2600));
 });
 function startApproach(){
-  $('#pulse').hidden=true;
+  $('#pulse').toggleAttribute('hidden',true);
   const a=pt(S.from); const start={x:Math.max(20,Math.min(780,a.x-110)),y:Math.max(20,Math.min(540,a.y-90))};
   const ap=$('#approachPath'); ap.setAttribute('d',curveD(start,a,-0.25));
   $('#tFrom').textContent=current.from; $('#tTo').textContent=current.to; $('#tFare').textContent=fmt(current.fare)+' د.ع';
@@ -659,7 +659,7 @@ function startTrip(){
   $('#approachPath').setAttribute('d','');
   $('#tripTitle').textContent='بالطريق إلى '+current.to;
   animateAlong($('#routePath'), reduce?1000:10000, t=>{$('#tripBar').style.width=(t*100)+'%';$('#tripEta').textContent=Math.max(1,Math.ceil(current.min*(1-t)))+' د';},()=>{
-    $('#car').hidden=true; showDone();
+    $('#car').toggleAttribute('hidden',true); showDone();
   });
 }
 let rating=5, tip=0;
@@ -692,7 +692,7 @@ $('#btnFinish').addEventListener('click',()=>{
   toast('شكراً لاستخدامك هلا احمد!');
   $('#routePath').setAttribute('d',''); renderAll(); setStep('plan'); $('#tripBar').style.width='0';
 });
-function cancelRide(){clearFlow();$('#pulse').hidden=true;$('#car').hidden=true;$('#approachPath').setAttribute('d','');$('#tripBar').style.width='0';setStep('plan');renderPlan();toast('تم إلغاء الطلب');}
+function cancelRide(){clearFlow();$('#pulse').toggleAttribute('hidden',true);$('#car').toggleAttribute('hidden',true);$('#approachPath').setAttribute('d','');$('#tripBar').style.width='0';setStep('plan');renderPlan();toast('تم إلغاء الطلب');}
 $('#btnCancel').addEventListener('click',cancelRide);
 $('#btnCancel2').addEventListener('click',cancelRide);
 function today(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
@@ -750,8 +750,8 @@ function renderRider(){
   $('#rsTrips').textContent=40+S.history.length;
   $('#rsSpent').textContent=fmt(312000+S.history.reduce((s,h)=>s+h.fare,0));
   $('#rsKm').textContent=fmt(380+S.history.reduce((s,h)=>s+h.km,0));
-  $('#savedPlaces').innerHTML=S.saved.map(s=>`<li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><span class="grow"><b>${s.k}</b><br><span class="small muted">${PLACES[s.p].name}، بغداد</span></span><button class="btn btn-ghost small" type="button" data-go="${s.p}">روح هناك</button></li>`).join('');
-  $$('#savedPlaces [data-go]').forEach(b=>b.addEventListener('click',()=>{S.to=b.dataset.go; if(S.from===S.to) S.from=S.to==='karrada'?'mansour':'karrada'; fillSelects(); renderPlan(); location.hash='ride';}));
+  $('#savedPlaces').innerHTML=S.saved.map(s=>`<li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><span class="grow"><b>${s.k}</b><br><span class="small muted">${PLACES[s.p].name}، البصرة</span></span><button class="btn btn-ghost small" type="button" data-go="${s.p}">روح هناك</button></li>`).join('');
+  $$('#savedPlaces [data-go]').forEach(b=>b.addEventListener('click',()=>{S.to=b.dataset.go; if(S.from===S.to) S.from=S.to==='ashar'?'jazair':'ashar'; fillSelects(); renderPlan(); location.hash='ride';}));
   $('#history').innerHTML=S.history.slice(0,6).map(h=>`<li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14v-5l-2-5H7l-2 5z"/><circle cx="8" cy="17" r="2"/><circle cx="16" cy="17" r="2"/></svg></span><span class="grow"><b>${h.from} ← ${h.to}</b><br><span class="small muted"><span class="num">${h.d}</span> · <span class="num">${h.km.toFixed(1)}</span> كم · ${'★'.repeat(h.rating)}</span></span><b class="num">${fmt(h.fare)}</b></li>`).join('');
 }
 $('#riderForm').addEventListener('submit',e=>{
