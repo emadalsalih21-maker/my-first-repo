@@ -1,0 +1,15 @@
+{
+  "name": "هلا كابتن",
+  "short_name": "هلا",
+  "description": "تكسي ونقل داخل البصرة",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ECF0F1",
+  "theme_color": "#F5C21B",
+  "icons": [
+    {"src": "assets/logo-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "assets/logo-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
