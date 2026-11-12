@@ -1483,19 +1483,30 @@ function welcomeMsg(cargo){
 
 /* ================= quick support chat (scripted demo of the AI assistant) ================= */
 const BOT=APP==='captain'?{name:'زهراء',av:'ز',human:'حسين'}:{name:'كاظم',av:'ك',human:'نور'};
-const has=(t,ws)=>ws.some(w=>t.includes(w));
+const norm=t=>String(t).replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/،/g,',').toLowerCase();
+const has=(t,ws)=>{const n=norm(t);return ws.some(w=>n.includes(norm(w)));};
+const WORDNUM={'الف':1,'الفين':2,'ثلاث':3,'تلاث':3,'اربع':4,'خمس':5,'ست':6,'سبع':7,'ثمان':8,'ثمن':8,'تسع':9,'عشر':10};
+function parseAmount(t){
+  const n=norm(t);let m=n.match(/(\d[\d,\.]*)/);
+  if(m){let v=parseFloat(m[1].replace(/,/g,''));if(v<100&&/الف|الاف|تالاف|k/.test(n))v*=1000;return v>=250&&v<=500000?Math.round(v):null;}
+  if(/الفين/.test(n))return 2000;
+  for(const [w,v] of Object.entries(WORDNUM)){if(w!=='الف'&&w!=='الفين'&&n.includes(w)&&/الف|الاف|تالاف/.test(n))return v*1000;}
+  if(/(^|\s)الف(\s|$)/.test(n))return 1000;
+  return null;
+}
+const ticket=()=>'#H-'+Math.floor(1000+Math.random()*9000);
 const URGENT=['حادث','خطر','تحرش','ضربني','اعتداء','طوارئ','خايف','خايفة','مسلح','سرقة','سرقني'];
 const RIDER_RULES=[
   {k:URGENT,urgent:true,r:()=>`سلامتك أهم شي. إذا بخطر هسه:\nالشرطة 104 · الإسعاف 122 · الدفاع المدني 115\nوحوّلتك لموظف حقيقي هسه حتى يتابع وياك، وتكدر تشارك موقعك من زر «شارك الرحلة».`},
-  {k:['زايد','غالي','سعر','اجرة','أجرة','حسبني','حساب','فلوس زايدة'],r:()=>{const h=S.history[0];return `لا يهمك. آخر رحلة إلك كانت ${h.from} ← ${h.to} بـ ${fmt(h.fare)} د.ع.\nإذا تحس السعر زايد، كلّي شكد كان المفروض، وأفتحلك طلب مراجعة. وإذا طلع الحق وياك يرجعلك الفرق بالمحفظة خلال 24 ساعة.`;}},
-  {k:['نسيت','ضاع','ضايع','جنطة','جنطتي','موبايلي','محفظتي','غرض'],r:()=>`ولا يهمك، هسه أبلغ الكابتن ${CAPS[S.history[0].cap||'taxi'].first} من آخر رحلة.\nكلّي شنو الغرض ولونه، وأقرب مكان يناسبك تستلمه بيه. التوصيل للغرض يكون بأجرة مشوار عادي.`},
+  {k:['زايد','غالي','سعر','اجرة','أجرة','حسبني','حسابي غلط','فلوس زايدة','مفروض','اخذ مني','أخذ مني','طلب مني'],next:'fare',r:()=>{const h=S.history[0];return `لا يهمك. آخر رحلة إلك كانت ${h.from} ← ${h.to} بـ ${fmt(h.fare)} د.ع.\nإذا تحس السعر زايد، كلّي شكد كان المفروض، وأفتحلك طلب مراجعة. وإذا طلع الحق وياك يرجعلك الفرق بالمحفظة خلال 24 ساعة.`;}},
+  {k:['نسيت','ضاع','ضايع','جنطة','جنطتي','موبايلي','محفظتي','غرض'],next:'lost',r:()=>`ولا يهمك، هسه أبلغ الكابتن ${CAPS[S.history[0].cap||'taxi'].first} من آخر رحلة.\nكلّي شنو الغرض ولونه، وأقرب مكان يناسبك تستلمه بيه. التوصيل للغرض يكون بأجرة مشوار عادي.`},
   {k:['تأخر','متأخر','ما اجه','ما إجه','وين الكابتن','بطيء','واكف'],r:()=>`حقك علينا. تكدر تشوف مكان الكابتن مباشرة على الخريطة.\nإذا تأخر أكثر من 10 دقايق عن الوقت المكتوب، تكدر تلغي بدون رسوم، وأضيفلك كود خصم HALA10 للمرة الجاية.`},
   {k:['الغي','ألغي','الغاء','إلغاء','كنسل'],r:()=>`الإلغاء مجاني خلال أول دقيقتين من الطلب.\nبعدها تنحسب 1,000 د.ع، إلا إذا الكابتن تأخر أكثر من 10 دقايق، فيكون الإلغاء مجاني.`},
   {k:['محفظة','شحن','بطاقة','زين كاش','دفع','ادفع','رصيد'],r:()=>`رصيد محفظتك هسه ${fmt(S.balance)} د.ع.\nتكدر تشحن من «المحفظة»، أو تدفع نقداً أو بالبطاقة أو زين كاش. تغيّر طريقة الدفع قبل لا تطلب.`},
   {k:['كود','خصم','عرض','تخفيض'],r:()=>`عندك كود HALA10: خصم 10% لحد 3,000 د.ع.\nاكتبه بخانة «كود خصم» قبل لا تطلب. وإذا تدعي صديق تاخذ 5,000 د.ع.`},
   {k:['نقل','اثاث','أثاث','ثلاجة','غسالة','عمال','بيكب','لوري','ستوتة','طابوق','سمنت'],r:()=>`خدمة النقل داخل البصرة: تختار «نقل وتوصيل» وتحدد الأغراض، والتطبيق يقترح السيارة المناسبة (ستوتة، بيكب، لوري صغير).\nالعامل الواحد بـ 5,000 د.ع، والتغليف بـ 5,000، وتكدر تحجز بموعد.`},
-  {k:['شكوى','اشتكي','أشتكي','اسلوب','أسلوب','سواق','سايق','الكابتن','دخن','تدخين'],r:()=>`آسفين على اللي صار. كلّي شنو صار بالتفصيل وأي رحلة، وأرفع الشكوى لقسم الجودة.\nنراجع كل شكوى خلال 24 ساعة، والكابتن ما يعرف منو اشتكى.`},
-  {k:['حساب','رقمي','اسمي','بياناتي','احذف','حذف'],r:()=>`تكدر تعدّل اسمك ورقمك وعمرك من «حسابي». وإذا تريد تحذف حسابك وكل بياناتك، كلّي وأفتحلك الطلب، وينحذف خلال 7 أيام.`},
+  {k:['شكوى','اشتكي','أشتكي','اسلوب','أسلوب','سواق','سايق','الكابتن','دخن','تدخين'],next:'complaint',r:()=>`آسفين على اللي صار. كلّي شنو صار بالتفصيل وأي رحلة، وأرفع الشكوى لقسم الجودة.\nنراجع كل شكوى خلال 24 ساعة، والكابتن ما يعرف منو اشتكى.`},
+  {k:['حساب','رقمي','اسمي','بياناتي','احذف','حذف'],next:'del',r:()=>`تكدر تعدّل اسمك ورقمك وعمرك من «حسابي». وإذا تريد تحذف حسابك وكل بياناتك، كلّي وأفتحلك الطلب، وينحذف خلال 7 أيام.`},
   {k:['شكرا','شكراً','مشكور','تسلم','عاشت','الله يخليك'],r:()=>'العفو عيوني، بالخدمة دايماً. إذا احتجت أي شي آني هنا.'},
   {k:['هلا','مرحبا','السلام','شلونك','شونك','صباح','مساء'],r:()=>`هلا بيك وعليكم السلام. آني ${BOT.name}، شنو أكدر أخدمك؟`},
 ];
@@ -1512,6 +1523,19 @@ const CAP_RULES=[
 ];
 const QUICK=APP==='captain'?['متى تتحول أرباحي؟','الزبون ما إجه','ماكو طلبات','تجديد التأمين','عمولة الكاش']:['الأجرة طلعت زايدة','نسيت غرض بالسيارة','الكابتن تأخر','شلون ألغي الطلب؟','عندي كود خصم؟','نقل أثاث'];
 let chatStarted=false,human=false;
+/* follow-up answers: the bot remembers what it just asked */
+let pending=null,misses=0;
+const FOLLOW={
+  fare:txt=>{const v=parseAmount(txt);const h=S.history[0];
+    if(v===null)return {again:true,r:'كلّي المبلغ اللي كان المفروض بالأرقام، مثلاً 5000 أو ٥٠٠٠.'};
+    const diff=h.fare-v;
+    if(diff<=0)return {r:`الرحلة انحسبت ${fmt(h.fare)} د.ع، يعني مو أكثر من ${fmt(v)}. إذا تقصد رحلة ثانية، كلّي منين لوين.`};
+    return {r:`تمام، فتحتلك طلب مراجعة رقم ${ticket()}.\nالرحلة انحسبت ${fmt(h.fare)} د.ع والمفروض ${fmt(v)} د.ع، يعني الفرق ${fmt(diff)} د.ع.\nنراجع المسار، وإذا طلع الحق وياك يرجعلك الفرق بالمحفظة خلال 24 ساعة ويوصلك إشعار.`};},
+  lost:txt=>({r:`تمام، بلّغت الكابتن ${CAPS[S.history[0].cap||'taxi'].first} عن: «${txt}». رقم البلاغ ${ticket()}.\nراح يتواصل وياك خلال ساعة حتى تتفقون على مكان ووقت الاستلام.`}),
+  complaint:txt=>({r:`وصلت شكوتك، رقمها ${ticket()}. قسم الجودة يراجعها خلال 24 ساعة ويتصل بيك.\nوالكابتن ما يعرف منو اشتكى.`}),
+  del:txt=>has(txt,['نعم','اي','ايه','أكيد','اكيد','احذف'])?{r:`تمام، فتحت طلب حذف الحساب ${ticket()}. ينحذف حسابك وكل بياناتك خلال 7 أيام، وإذا غيرت رأيك كلّي قبلها.`}:{r:'تمام، ما راح نحذف شي. إذا تحتاج أي شي ثاني آني هنا.'},
+};
+
 function addMsg(cls,txt,who){const b=$('#chatBody');const d=document.createElement('div');d.className='msg '+cls;if(who){const w=document.createElement('span');w.className='who';w.textContent=who;d.appendChild(w);}d.appendChild(document.createTextNode(txt));b.appendChild(d);b.scrollTop=b.scrollHeight;}
 function botSay(txt,cls='bot',who){const b=$('#chatBody');const t=document.createElement('div');t.className='typing';t.textContent=(who||BOT.name)+' دا يكتب…';b.appendChild(t);b.scrollTop=b.scrollHeight;
   setTimeout(()=>{t.remove();addMsg(cls,txt,who||BOT.name+' · دعم ذكي');},reduce?50:Math.min(1600,500+txt.length*8));}
@@ -1531,10 +1555,18 @@ function toHuman(reason){
 function userSay(txt){
   txt=txt.trim();if(!txt)return;addMsg('mine',txt);
   if(human){setTimeout(()=>addMsg('human','وصلت رسالتك، لحظات وأرد عليك.',BOT.human+' · موظف حقيقي'),reduce?50:1500);return;}
-  const rules=APP==='captain'?CAP_RULES:RIDER_RULES;const r=rules.find(x=>has(txt,x.k));
-  if(r){botSay(r.r(),r.urgent?'bot urgent':'bot');if(r.urgent)setTimeout(()=>toHuman(true),reduce?100:1800);}
-  else botSay('ما فهمت عليك زين. تكدر توضح أكثر؟ أو اختار من الأزرار تحت، أو اضغط «حوّلني لموظف».');
+  const rules=APP==='captain'?CAP_RULES:RIDER_RULES;
+  const urgent=rules.find(x=>x.urgent&&has(txt,x.k));
+  if(urgent){pending=null;botSay(urgent.r(),'bot urgent');setTimeout(()=>toHuman(true),reduce?100:1800);return;}
+  if(pending){const p=pending;const res=FOLLOW[p](txt);pending=res.again?p:null;misses=0;botSay(res.r);return;}
+  const r=rules.find(x=>!x.urgent&&has(txt,x.k));
+  if(r){misses=0;if(r.next==='fare'&&parseAmount(txt)!==null){pending='fare';userSayFollow(txt);return;}pending=r.next||null;botSay(r.r());return;}
+  if(parseAmount(txt)!==null&&APP!=='captain'){pending='fare';userSayFollow(txt);return;}
+  misses++;
+  if(misses>=2){botSay('يبين سؤالك يحتاج موظف يتابعه. حوّلتك هسه لواحد من فريق هلا.');setTimeout(()=>toHuman(false),reduce?100:1800);misses=0;}
+  else botSay('ما فهمت عليك زين. تكدر تكتبها بطريقة ثانية؟ أو اختار من الأزرار تحت.');
 }
+function userSayFollow(txt){const res=FOLLOW.fare(txt);pending=res.again?'fare':null;botSay(res.r);}
 $('#chatForm').addEventListener('submit',e=>{e.preventDefault();userSay($('#chatIn').value);$('#chatIn').value='';});
 $('#toHuman').addEventListener('click',()=>toHuman(false));
 
