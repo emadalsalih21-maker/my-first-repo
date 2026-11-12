@@ -456,7 +456,7 @@ textarea.input{resize:vertical;font:inherit}
           <!-- step: search -->
           <div class="stack" data-step="search" hidden style="text-align:center">
             <div class="spinner" aria-hidden="true"></div>
-            <h3 id="searchTitle">ندوّر على أقرب هلا كابتن…</h3>
+            <h3 id="searchTitle">ندوّر على أقرب كابتن…</h3>
             <p class="muted small">عادةً تاخذ أقل من دقيقة</p>
             <button class="btn btn-ghost btn-danger" id="btnCancel" type="button">إلغاء الطلب</button>
           </div>
@@ -467,7 +467,7 @@ textarea.input{resize:vertical;font:inherit}
             <div class="progress"><i id="liveBar"></i></div>
             <button class="cap-card" type="button" data-open-captain>
               <span class="cap-photo" data-cap-photo></span>
-              <span style="min-width:0"><b data-cap-title></b> <span class="stars-row small">★</span> <b class="small num" data-cap-rating></b><br><span class="small muted"><span data-cap-car></span> · <span data-cap-color></span></span><br><span class="go">عرض ملف الكابتن ‹</span></span>
+              <span style="min-width:0"><b data-cap-title data-cap-prefix></b> <span class="stars-row small">★</span> <b class="small num" data-cap-rating></b><br><span class="small muted"><span data-cap-car></span> · <span data-cap-color></span></span><br><span class="go">عرض ملف الكابتن ‹</span></span>
               <span class="plate"><small>البصرة</small><span class="num" data-cap-plate-no></span></span>
             </button>
             <div class="actions">
@@ -490,7 +490,7 @@ textarea.input{resize:vertical;font:inherit}
           <div class="stack" data-step="done" hidden>
             <div style="text-align:center" class="stack">
               <span class="cap-photo lg" data-cap-photo style="margin:0 auto"></span>
-              <div><span class="chip chip-ok">وصلت بالسلامة</span><h3 style="margin-top:6px">شلون كانت رحلتك ويه هلا كابتن <span data-cap-first></span>؟</h3></div>
+              <div><span class="chip chip-ok">وصلت بالسلامة</span><h3 style="margin-top:6px">شلون كانت رحلتك ويه <span data-cap-first></span>؟</h3></div>
             </div>
             <div class="stars" id="stars" role="radiogroup" aria-label="التقييم"></div>
             <div class="chips" id="praise" style="justify-content:center"></div>
@@ -835,11 +835,11 @@ cargo:{
   checks:[['الهوية الوطنية','تم التحقق'],['إجازة السوق (حمل)','نافذة لغاية 2028'],['سنوية السيارة','نافذة'],['فحص السيارة الدوري','تم 2025'],['تدريب التحميل الآمن','مكتمل']],
 }};
 let CAPTAIN=CAPS.taxi;
-function photoHTML(cap=CAPTAIN){return cap.hasPhoto?`<img src="${cap.photo}" alt="صورة هلا كابتن ${esc(cap.name)}">`:esc(cap.first[0]);}
-const capTitle=cap=>`<span class="hk">هلا كابتن</span> ${esc(cap.name)}`;
+function photoHTML(cap=CAPTAIN){return cap.hasPhoto?`<img src="${cap.photo}" alt="صورة ${esc(cap.name)}">`:esc(cap.first[0]);}
+const capTitle=(cap,pre)=>(pre?'<span class="hk">هلا كابتن</span> ':'')+esc(cap.name);
 const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
 function fillCaptain(){
-  $$('[data-cap-title]').forEach(el=>{el.innerHTML=capTitle(el.closest('[data-app-cap]')?CAPS.taxi:CAPTAIN);});
+  $$('[data-cap-title]').forEach(el=>{el.innerHTML=capTitle(el.closest('[data-app-cap]')?CAPS.taxi:CAPTAIN,el.hasAttribute('data-cap-prefix'));});
   $$('[data-cap-photo]').forEach(el=>{el.innerHTML=photoHTML(el.closest('[data-app-cap]')?CAPS.taxi:CAPTAIN)+(el.classList.contains('lg')?`<span class="verified" title="موثّق">${CHECK}</span>`:'');});
   const vals={name:CAPTAIN.name,first:CAPTAIN.first,rating:CAPTAIN.rating.toFixed(2),ratings:fmt(CAPTAIN.ratings),trips:fmt(CAPTAIN.trips),years:CAPTAIN.years,accept:CAPTAIN.accept,cancel:CAPTAIN.cancel,since:CAPTAIN.since,langs:CAPTAIN.langs,areas:CAPTAIN.areas,car:CAPTAIN.car,year:CAPTAIN.year,color:CAPTAIN.color,'plate-no':CAPTAIN.plateNo,seats:CAPTAIN.seats};
   Object.entries(vals).forEach(([k,v])=>$$(`[data-cap-${k}]`).forEach(el=>{const cap=el.closest('[data-app-cap]')?CAPS.taxi:CAPTAIN;const vv={name:cap.name,first:cap.first,rating:cap.rating.toFixed(2),trips:fmt(cap.trips),accept:cap.accept,car:cap.car,year:cap.year,color:cap.color,'plate-no':cap.plateNo}[k];el.textContent=vv!==undefined?vv:v;}));
@@ -1101,7 +1101,7 @@ function renderCargo(){
 function setService(svc){
   if(step!=='plan')return;CG.svc=svc;$$('.svc button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.svc===svc));
   const cg=svc==='cargo';$('#modeALbl').textContent=cg?'الاستلام':'من وين';$('#modeBLbl').textContent=cg?'التسليم':'إلى وين';
-  $('#searchTitle').textContent=cg?'ندوّر على أقرب سيارة حمل…':'ندوّر على أقرب هلا كابتن…';
+  $('#searchTitle').textContent=cg?'ندوّر على أقرب سيارة حمل…':'ندوّر على أقرب كابتن…';
   taxis.forEach((t,i)=>t.m.setIcon(cg?(i%2?truckIcon:taxiIcon(false)):taxiIcon(false)));
   setMode(mode);if(routeLine)routeLine.setStyle({color:cg?'#12343B':'#D99A00'});renderTrip();
 }
@@ -1149,7 +1149,7 @@ function startApproach(){
   map.fitBounds(L.latLngBounds([start,P.a.ll,P.b.ll]),{padding:[50,50],maxZoom:16});
   $('#tFrom').textContent=current.from;$('#tTo').textContent=current.to;$('#tFare').textContent=fmt(current.fare-current.disc)+' د.ع';
   const cg=current.svc==='cargo';
-  $('#liveTitle').textContent='هلا كابتن '+CAPTAIN.first+(cg?' بالطريق لموقع الاستلام':' بالطريق إليك');setStep('live');
+  $('#liveTitle').textContent=CAPTAIN.first+(cg?' بالطريق لموقع الاستلام':' بالطريق إليك');setStep('live');
   along([start,P.a.ll],reduce?800:6000,t=>{$('#liveBar').style.width=t*100+'%';$('#liveEta').textContent=Math.max(1,Math.ceil(current.eta*(1-t)))+' د';},()=>{
     toast(cg?'وصل الكابتن، دا يحمّلون الأغراض':'الكابتن وصل! اطلع لا تتأخر');
     if(cg){$('#liveTitle').textContent='دا يحمّلون الأغراض…';$('#liveEta').textContent='تحميل';}
@@ -1168,7 +1168,7 @@ $('#btnCancel').addEventListener('click',cancelRide);$('#btnCancel2').addEventLi
 function actionHTML(act){
   if(act==='call')return `<span>رقم الكابتن ${esc(CAPTAIN.first)}:</span><b class="ltr num" style="user-select:all">${CAPTAIN.phone}</b><div class="row"><button type="button" data-copy="${CAPTAIN.phone}">نسخ الرقم</button></div>`;
   if(act==='msg')return `<span>أرسل رسالة سريعة للكابتن:</span><div class="row">${['آني واكف كدام الباب','دقيقتين وأطلع','وين صرت؟','آني لابس قميص أزرق'].map(m=>`<button type="button" data-msg="${m}">${m}</button>`).join('')}</div>`;
-  if(act==='share'){const txt=`آني ويه تطبيق هلا: هلا كابتن ${CAPTAIN.name}، ${CAPTAIN.car} ${CAPTAIN.color}، لوحة البصرة ${CAPTAIN.plateNo}. من ${current?current.from:'-'} إلى ${current?current.to:'-'}.`;
+  if(act==='share'){const txt=`آني ويه تطبيق هلا: الكابتن ${CAPTAIN.name}، ${CAPTAIN.car} ${CAPTAIN.color}، لوحة البصرة ${CAPTAIN.plateNo}. من ${current?current.from:'-'} إلى ${current?current.to:'-'}.`;
     return `<span>انسخ تفاصيل الرحلة ودزّها لأهلك أو أصدقائك:</span><p class="small" style="user-select:all">${esc(txt)}</p><div class="row"><button type="button" data-copy="${esc(txt)}">نسخ التفاصيل</button></div>`;}
   if(act==='sos')return `<b style="color:var(--bad)">أرقام الطوارئ بالعراق</b><span>الشرطة: <b class="num">104</b> · الإسعاف: <b class="num">122</b> · الدفاع المدني: <b class="num">115</b></span><span class="small muted">رقم الطوارئ المحفوظ بحسابك: <b class="ltr num">${esc(S.rider.emergency)}</b></span>`;
 }
@@ -1202,7 +1202,7 @@ $('#btnFinish').addEventListener('click',()=>{
   S.saving+=current.disc;
   S.history.unshift({d:today()+' · الآن',from:current.from,to:current.to,fare:total,km:current.km,rating,cap:current.svc,svc:current.svc==='cargo'?'نقل · '+current.veh.name+' · '+current.items:''});
   CAPTAIN.trips++;CAPTAIN.ratings++;CAPTAIN.dist[rating]++;praise.forEach(k=>{const c=CAPTAIN.compliments.find(x=>x.k===k);if(c)c.n++;});
-  toast('شكراً! تقييمك وصل لـ هلا كابتن '+CAPTAIN.first);
+  toast('شكراً! تقييمك وصل للكابتن '+CAPTAIN.first);
   S.promo=null;$('#promo').value='';$('#promoNote').hidden=true;
   setStep('plan');clearPoint('b');renderAll();
 });
@@ -1222,7 +1222,7 @@ $('#fabFit').addEventListener('click',()=>{if(routeLine)map.fitBounds(routeLine.
 
 /* ================= trips ================= */
 function renderHistory(){
-  $('#history').innerHTML=S.history.map(h=>{const cap=CAPS[h.cap||'taxi'];return `<li><button type="button" class="cap-photo sm" data-open-captain="${cap.key}" title="ملف هلا كابتن ${esc(cap.name)}" style="border:0;cursor:pointer;padding:0">${photoHTML(cap)}</button><span class="grow"><b>${esc(h.from)} ← ${esc(h.to)}</b>${h.svc?`<br><span class="small" style="color:var(--accent-strong)">${esc(h.svc)}</span>`:''}<br><span class="small muted"><span class="num">${esc(h.d)}</span> · <span class="num">${h.km.toFixed(1)}</span> كم · هلا كابتن ${esc(cap.first)}${h.rating?` · <span class="stars-row">${'★'.repeat(h.rating)}</span>`:''}</span></span><b class="num">${fmt(h.fare)}</b></li>`;}).join('');
+  $('#history').innerHTML=S.history.map(h=>{const cap=CAPS[h.cap||'taxi'];return `<li><button type="button" class="cap-photo sm" data-open-captain="${cap.key}" title="ملف الكابتن ${esc(cap.name)}" style="border:0;cursor:pointer;padding:0">${photoHTML(cap)}</button><span class="grow"><b>${esc(h.from)} ← ${esc(h.to)}</b>${h.svc?`<br><span class="small" style="color:var(--accent-strong)">${esc(h.svc)}</span>`:''}<br><span class="small muted"><span class="num">${esc(h.d)}</span> · <span class="num">${h.km.toFixed(1)}</span> كم · الكابتن ${esc(cap.first)}${h.rating?` · <span class="stars-row">${'★'.repeat(h.rating)}</span>`:''}</span></span><b class="num">${fmt(h.fare)}</b></li>`;}).join('');
 }
 
 /* ================= wallet ================= */
@@ -1253,7 +1253,7 @@ $('#cardForm').addEventListener('submit',e=>{e.preventDefault();let ok=true;cons
 /* ================= account ================= */
 const initials=n=>n.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join(' ');
 function renderRider(){const r=S.rider;
-  $('#riderNameView').innerHTML='<span class="hk">هلا زبون</span> '+esc(r.name);$('#riderPhoneView').textContent=r.phone;$('#riderAvatar').textContent=initials(r.name);$('#topAvatar').textContent=initials(r.name);
+  $('#riderNameView').textContent=r.name;$('#riderPhoneView').textContent=r.phone;$('#riderAvatar').textContent=initials(r.name);$('#topAvatar').textContent=initials(r.name);
   $('#rName').value=r.name;$('#rPhone').value=r.phone;$('#rEmail').value=r.email;$('#rEmergency').value=r.emergency;
   $('#rsTrips').textContent=40+S.history.length;$('#rsSpent').textContent=fmt(312000+S.history.reduce((s,h)=>s+h.fare,0));$('#rsSaved').textContent=fmt(S.saving);
   $('#savedPlaces').innerHTML=S.saved.map(s=>`<li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><span class="grow"><b>${esc(s.k)}</b><br><span class="small muted">${esc(s.p)}، البصرة</span></span><button class="btn btn-ghost small" type="button" data-go="${esc(s.p)}" data-k="${esc(s.k)}">روح هناك</button></li>`).join('');
@@ -1310,7 +1310,7 @@ function goOffline(){if(['pickup','waiting','trip','collect'].includes(C.step)){
 $('#cGo').addEventListener('click',goOnline);
 $('#cOnline').addEventListener('change',e=>e.target.checked?goOnline():goOffline());
 function scheduleCReq(){cTimers.push(setTimeout(()=>{if(C.step!=='idle')return;if(location.hash!=='#cap-home'){scheduleCReq();return;}showCReq();},reduce?600:3500));}
-function riderRow(j){return `<span class="rider-av">${esc(j.rider.n[0])}</span><span class="grow" style="flex:1;min-width:0"><b><span class="hk">هلا زبون</span> ${esc(j.rider.n)}</b> <span class="stars-row small">★</span> <b class="small num">${j.rider.r.toFixed(1)}</b><br><span class="small muted">${esc(j.pay)}</span></span>`;}
+function riderRow(j,pre){return `<span class="rider-av">${esc(j.rider.n[0])}</span><span class="grow" style="flex:1;min-width:0"><b>${pre?'<span class="hk">هلا زبون</span> ':''}${esc(j.rider.n)}</b> <span class="stars-row small">★</span> <b class="small num">${j.rider.r.toFixed(1)}</b><br><span class="small muted">${esc(j.pay)}</span></span>`;}
 function showCReq(){
   const cashOk=$('#cCashOk').checked;
   let a=PLACES[Math.floor(Math.random()*9)],b;do{b=PLACES[Math.floor(Math.random()*11)];}while(b===a);
@@ -1323,7 +1323,7 @@ function showCReq(){
   let left=15;
   $('#cReq').innerHTML=`<div class="req-card" role="alert">
     <div class="row between"><div><span class="small muted">طلب رحلة${mult>1?` · <b style="color:var(--accent-strong)">طلب عالي ×${mult}</b>`:''}</span><div class="req-fare"><span class="num">${fmt(f)}</span> <span style="font-size:1rem">د.ع</span></div><span class="small">صافي لك: <b class="num">${fmt(netOf(f))}</b> د.ع</span></div><div class="ring" id="cRing"><b class="num" id="cLeft">15</b></div></div>
-    <div class="rider-row">${riderRow(cJob)}</div>
+    <div class="rider-row">${riderRow(cJob,true)}</div>
     <div class="points" style="background:var(--surface)"><span class="dot-a"></span><span class="val">${esc(a.n)} <span class="small muted">· يبعد <span class="num">${cJob.pickKm.toFixed(1)}</span> كم</span></span><span></span><span class="dot-b"></span><span class="val">${esc(b.n)} <span class="small muted">· <span class="num">${km.toFixed(1)}</span> كم</span></span><span></span></div>
     <div class="grid-2"><button class="btn" id="cNo" type="button">رفض</button><button class="btn btn-primary" id="cYes" type="button">قبول</button></div></div>`;
   setCStep('request');
@@ -1352,7 +1352,7 @@ $('#cCancel').addEventListener('click',()=>{clearC();clearJobMap();cJob=null;set
 $('#cStart').addEventListener('click',async()=>{
   clearInterval(cWaitT);const waitedMin=(Date.now()-cJob.waitStart)/60000;cJob.waitFee=waitedMin>3?Math.round((waitedMin-3))*250:0;
   setCStep('trip');if(cLine)cmap.removeLayer(cLine);if(cPinA){cmap.removeLayer(cPinA);cPinA=null;}
-  $('#cDropName').textContent=cJob.b.n;$('#cTripRider').textContent='هلا زبون '+cJob.rider.n;$('#cTripPay').textContent=cJob.pay;$('#cTripFare').textContent=fmt(cJob.fare)+' د.ع';$('#cEnd').disabled=true;$('#cTripBar').style.width='0';
+  $('#cDropName').textContent=cJob.b.n;$('#cTripRider').textContent=cJob.rider.n;$('#cTripPay').textContent=cJob.pay;$('#cTripFare').textContent=fmt(cJob.fare)+' د.ع';$('#cEnd').disabled=true;$('#cTripBar').style.width='0';
   const B=L.latLng(cJob.b.c);const rt=await getRoute(capPos,B);if(C.step!=='trip')return;
   cLine=L.polyline(rt.coords,{color:'#D99A00',weight:6}).addTo(cmap);cmap.fitBounds(cLine.getBounds(),{padding:[50,50],maxZoom:16});
   const ne=$('#navExt');ne.href=navLink(B);ne.hidden=false;
