@@ -269,6 +269,29 @@ th{font-size:.75rem;color:var(--muted);font-weight:600}
 .chart .bar.today{opacity:1}
 .chart .val{fill:var(--ink);font-weight:700;font-size:11px}
 
+.greet{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;background:var(--accent-soft);border:1px solid var(--accent);animation:pop .35s ease-out}
+.greet img{width:36px;height:36px;border-radius:9px;flex:none}
+.greet b{font-size:.8rem;color:var(--accent-strong)}
+.greet p{font-size:.95rem;font-weight:600}
+@keyframes pop{from{transform:translateY(6px);opacity:.3}to{transform:none;opacity:1}}
+.help-btn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line);color:var(--ink);text-decoration:none;flex:none}
+.help-btn svg{width:20px;height:20px}
+.chat{display:flex;flex-direction:column;gap:12px;max-width:760px}
+.chat-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.chat-head .grow{flex:1;min-width:0}
+.bot-av{width:46px;height:46px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-size:1.3rem;flex:none;position:relative}
+.bot-av::after{content:"";position:absolute;bottom:1px;left:1px;width:11px;height:11px;border-radius:50%;background:var(--ok);border:2px solid var(--surface)}
+.chat-body{display:flex;flex-direction:column;gap:8px;height:min(52vh,460px);overflow-y:auto;padding:12px;background:var(--surface-2);border-radius:12px;border:1px solid var(--line)}
+.msg{max-width:82%;padding:9px 13px;border-radius:16px;font-size:.95rem;line-height:1.55;white-space:pre-line;animation:pop .25s ease-out}
+.msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-start-start-radius:4px}
+.msg.mine{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-start-end-radius:4px}
+.msg.human{align-self:flex-start;background:var(--ok-soft);border:1px solid var(--ok);border-start-start-radius:4px}
+.msg .who{display:block;font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:2px}
+.msg.sys{align-self:center;background:transparent;color:var(--muted);font-size:.8rem;padding:2px}
+.msg.urgent{border-color:var(--bad);background:var(--bad-soft)}
+.typing{align-self:flex-start;color:var(--muted);font-size:.82rem;padding:2px 6px}
+.chat-input{display:flex;gap:8px}
+.chat-input .input{flex:1;min-width:0}
 .toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:99px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:2000;max-width:calc(100% - 32px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -359,6 +382,7 @@ textarea.input{resize:vertical;font:inherit}
     <span><span class="brand-name">هلا</span><span class="brand-tag" id="brandTag">هلا كابتن · تكسي ونقل داخل البصرة</span></span>
   </a>
   <span class="demo-badge">نسخة تجريبية</span>
+  <a class="help-btn" id="topHelp" href="#support" title="الدعم السريع" aria-label="الدعم السريع"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/><path d="M9.5 10a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 16.5v.2"/></svg></a>
   <a class="avatar" id="topAvatar" href="#account" title="حسابي">م ح</a>
 </header>
 
@@ -465,6 +489,7 @@ textarea.input{resize:vertical;font:inherit}
           <div class="stack" data-step="live" hidden>
             <div class="row between"><h3 id="liveTitle">الكابتن بالطريق إليك</h3><span class="chip chip-accent num" id="liveEta"></span></div>
             <div class="progress"><i id="liveBar"></i></div>
+            <div class="greet" id="greet" hidden role="status"><img src="assets/logo-64.png" alt=""><div><b>رسالة من هلا</b><p id="greetTxt"></p></div></div>
             <button class="cap-card" type="button" data-open-captain>
               <span class="cap-photo" data-cap-photo></span>
               <span style="min-width:0"><b data-cap-title data-cap-prefix></b> <span class="stars-row small">★</span> <b class="small num" data-cap-rating></b><br><span class="small muted"><span data-cap-car></span> · <span data-cap-color></span></span><br><span class="go">عرض ملف الكابتن ‹</span></span>
@@ -570,6 +595,22 @@ textarea.input{resize:vertical;font:inherit}
       </div>
     </section>
 
+    <!-- ================= SUPPORT ================= -->
+    <section data-view="support" hidden>
+      <div class="view-head"><div><h2>الدعم السريع</h2><p class="muted small">اكتب مشكلتك والرد يجيك خلال ثواني، 24 ساعة.</p></div></div>
+      <div class="card chat">
+        <div class="chat-head">
+          <span class="bot-av" id="botAv">ك</span>
+          <div class="grow"><b id="botName">كاظم</b> <span class="chip chip-accent">مساعد ذكي</span><br><span class="small muted">مساعد هلا الذكي · يرد خلال ثواني</span></div>
+          <button class="btn" type="button" id="toHuman">حوّلني لموظف</button>
+        </div>
+        <div class="chat-body" id="chatBody" aria-live="polite"></div>
+        <div class="chips" id="chatQuick"></div>
+        <form class="chat-input" id="chatForm" autocomplete="off"><input class="input" id="chatIn" placeholder="اكتب مشكلتك هنا…" aria-label="رسالتك"><button class="btn btn-primary" type="submit">إرسال</button></form>
+        <p class="note"><span id="botName2">كاظم</span> مساعد ذكي (ذكاء اصطناعي) مو إنسان. للمشاكل الكبيرة اضغط «حوّلني لموظف».</p>
+      </div>
+    </section>
+
     <!-- ================= TRIPS ================= -->
     <section data-view="trips" hidden>
       <div class="view-head"><div><h2>رحلاتي</h2><p class="muted small">كل رحلاتك ويه هلا. اضغط على صورة الكابتن حتى تشوف ملفه.</p></div></div>
@@ -631,6 +672,11 @@ textarea.input{resize:vertical;font:inherit}
             <label class="field">رقم الهاتف<input class="input ltr num" id="rPhone" inputmode="tel"></label>
             <label class="field">البريد الإلكتروني<input class="input ltr" id="rEmail" type="email"></label>
             <label class="field">رقم شخص للطوارئ<input class="input ltr num" id="rEmergency" inputmode="tel"></label>
+            <div class="grid-2" style="gap:10px">
+              <label class="field">العمر<input class="input num" id="rAge" inputmode="numeric" maxlength="3"></label>
+              <label class="field">تحب نخاطبك بـ<select class="input" id="rTitle"><option value="none">بدون لقب</option><option value="akh">أخوي</option><option value="ukht">أختي</option><option value="haji">حجي</option><option value="hajia">حجية</option></select></label>
+            </div>
+            <p class="note">نستخدمهن بس حتى نرحب بيك بالطريقة اللي تحبها. تكدر تغيرهن أي وقت.</p>
             <span class="err" id="rErrForm"></span>
             <button class="btn btn-primary" type="submit">حفظ التغييرات</button>
           </form>
@@ -774,7 +820,7 @@ textarea.input{resize:vertical;font:inherit}
             <div class="set-row"><span>تطبيق الملاحة</span><div class="seg" id="cNavPref"><button type="button" data-v="google" aria-pressed="true">Google</button><button type="button" data-v="waze" aria-pressed="false">Waze</button></div></div>
             <div class="set-row"><span>استقبال رحلات الدفع النقدي</span><label class="switch"><input type="checkbox" id="cCashOk" checked><span class="track"></span></label></div>
             <div class="set-row"><span>صوت تنبيه الطلبات</span><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
-            <div class="set-row"><span>دعم الكباتن (24 ساعة)</span><b class="ltr num">+964 780 000 4253</b></div>
+            <div class="set-row"><span>دعم الكباتن (24 ساعة)<br><span class="small muted ltr num">+964 780 000 4253</span></span><a class="btn" href="#support">كلّم زهراء</a></div>
           </div>
         </div>
         <div class="card">
@@ -876,7 +922,7 @@ const S={
     {d:'01/11 · 11:05 ص',from:'التنومة',to:'مطار البصرة الدولي',fare:16500,km:20.1,rating:4},
     {d:'28/10 · 10:00 ص',from:'الجبيلة',to:'الحيانية',fare:27500,km:4.6,rating:5,cap:'cargo',svc:'نقل · بيكب · ثلاجة، غسالة'},
   ],
-  rider:{name:'مصطفى حسن',phone:'+964 770 123 4567',email:'mustafa.h@example.com',emergency:'+964 780 555 0192'},
+  rider:{name:'مصطفى حسن',phone:'+964 770 123 4567',email:'mustafa.h@example.com',emergency:'+964 780 555 0192',age:34,title:'akh'},
   saved:[{k:'البيت',p:'العشار'},{k:'الشغل',p:'الجزائر'},{k:'بيت أهلي',p:'المعقل'}],
   driver:{online:true,earn:46500,trips:7,list:[{t:'7:10 م',r:'المعقل ← الجبيلة',f:6500},{t:'5:45 م',r:'التنومة ← العشار',f:7000},{t:'4:20 م',r:'الجزائر ← الحيانية',f:7500}]},
   week:[42,55,38,61,70,84,0],
@@ -886,7 +932,7 @@ const discountFor=f=>S.promo?Math.min(3000,Math.round(f*0.1/250)*250):0;
 function today(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
 
 /* ================= views ================= */
-const VIEWS=['ride','trips','wallet','account','captain','cap-home','cap-earn','cap-trips','cap-me'];
+const VIEWS=['ride','trips','wallet','account','captain','support','cap-home','cap-earn','cap-trips','cap-me'];
 const NAVOF={captain:null};
 const APP=new URLSearchParams(location.search).get('app')==='captain'?'captain':'rider';
 let lastView=APP==='captain'?'cap-home':'ride', role=APP;
@@ -894,7 +940,8 @@ if(APP==='captain'){document.title='هلا زبون';document.getElementById('br
 function route(){
   const home=APP==='captain'?'cap-home':'ride';
   let v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):home;
-  if(v!=='captain'&&(v.startsWith('cap-')?'captain':'rider')!==APP) v=home;
+  if(v!=='captain'&&v!=='support'&&(v.startsWith('cap-')?'captain':'rider')!==APP) v=home;
+  if(v==='support') openSupport();
   $$('[data-view]').forEach(s=>s.hidden=s.dataset.view!==v);
   $('#riderNav').hidden=role!=='rider'; $('#capNav').hidden=role!=='captain';
   $('#topAvatar').href=role==='captain'?'#cap-me':'#account';
@@ -903,7 +950,7 @@ function route(){
   if(v==='ride') setTimeout(()=>map.invalidateSize(),50);
   if(v==='cap-home') setTimeout(()=>{initCapMap();cmap.invalidateSize();},50);
   if(v==='cap-earn') renderCapEarn();
-  if(v!=='captain') lastView=v;
+  if(v!=='captain'&&v!=='support') lastView=v;
   window.scrollTo(0,0);
 }
 window.addEventListener('hashchange',route);
@@ -1150,6 +1197,7 @@ function startApproach(){
   $('#tFrom').textContent=current.from;$('#tTo').textContent=current.to;$('#tFare').textContent=fmt(current.fare-current.disc)+' د.ع';
   const cg=current.svc==='cargo';
   $('#liveTitle').textContent=CAPTAIN.first+(cg?' بالطريق لموقع الاستلام':' بالطريق إليك');setStep('live');
+  $('#greet').hidden=true;timers.push(setTimeout(()=>{$('#greetTxt').textContent=welcomeMsg(cg);$('#greet').hidden=false;},reduce?0:1000));
   along([start,P.a.ll],reduce?800:6000,t=>{$('#liveBar').style.width=t*100+'%';$('#liveEta').textContent=Math.max(1,Math.ceil(current.eta*(1-t)))+' د';},()=>{
     toast(cg?'وصل الكابتن، دا يحمّلون الأغراض':'الكابتن وصل! اطلع لا تتأخر');
     if(cg){$('#liveTitle').textContent='دا يحمّلون الأغراض…';$('#liveEta').textContent='تحميل';}
@@ -1254,7 +1302,7 @@ $('#cardForm').addEventListener('submit',e=>{e.preventDefault();let ok=true;cons
 const initials=n=>n.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join(' ');
 function renderRider(){const r=S.rider;
   $('#riderNameView').textContent=r.name;$('#riderPhoneView').textContent=r.phone;$('#riderAvatar').textContent=initials(r.name);$('#topAvatar').textContent=initials(r.name);
-  $('#rName').value=r.name;$('#rPhone').value=r.phone;$('#rEmail').value=r.email;$('#rEmergency').value=r.emergency;
+  $('#rName').value=r.name;$('#rPhone').value=r.phone;$('#rEmail').value=r.email;$('#rEmergency').value=r.emergency;$('#rAge').value=r.age||'';$('#rTitle').value=r.title||'none';
   $('#rsTrips').textContent=40+S.history.length;$('#rsSpent').textContent=fmt(312000+S.history.reduce((s,h)=>s+h.fare,0));$('#rsSaved').textContent=fmt(S.saving);
   $('#savedPlaces').innerHTML=S.saved.map(s=>`<li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><span class="grow"><b>${esc(s.k)}</b><br><span class="small muted">${esc(s.p)}، البصرة</span></span><button class="btn btn-ghost small" type="button" data-go="${esc(s.p)}" data-k="${esc(s.k)}">روح هناك</button></li>`).join('');
   $$('#savedPlaces [data-go]').forEach(b=>b.addEventListener('click',()=>{const p=placeBy(b.dataset.go);location.hash='ride';setTimeout(()=>setPoint('b',L.latLng(p.c),b.dataset.k+' · '+p.n),80);}));}
@@ -1262,9 +1310,10 @@ $('#riderForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#
   if(name.length<3){$('#rErrForm').textContent='اكتب اسمك الكامل (3 أحرف على الأقل).';return;}
   if(!/^\+?[\d\s]{10,16}$/.test(phone)){$('#rErrForm').textContent='رقم الهاتف غير صحيح، مثال: +964 770 123 4567';return;}
   if(email&&!/^\S+@\S+\.\S+$/.test(email)){$('#rErrForm').textContent='البريد الإلكتروني غير صحيح.';return;}
-  $('#rErrForm').textContent='';Object.assign(S.rider,{name,phone,email,emergency:$('#rEmergency').value.trim()});renderRider();toast('تم حفظ بياناتك');});
+  $('#rErrForm').textContent='';const age=parseInt($('#rAge').value,10);if($('#rAge').value&&(!(age>=12&&age<=100))){$('#rErrForm').textContent='اكتب العمر بالأرقام، مثلاً 34.';return;}
+  Object.assign(S.rider,{name,phone,email,emergency:$('#rEmergency').value.trim(),age:age||null,title:$('#rTitle').value});renderRider();toast('تم حفظ بياناتك');});
 $('#btnInvite').addEventListener('click',async()=>{try{await navigator.clipboard.writeText('HALA-MUSTAFA');toast('تم نسخ كود الدعوة');}catch(e){toast('كود الدعوة: HALA-MUSTAFA');}});
-$('#btnSupport').addEventListener('click',()=>toast('خدمة الزبائن: +964 780 000 4252 (24 ساعة)'));
+$('#btnSupport').addEventListener('click',()=>{location.hash='support';});
 
 /* ================= captain app ================= */
 const COMM=0.15;
@@ -1410,6 +1459,84 @@ function payout(to){if(C.balance<=0){toast('ما عندك رصيد للتحوي�
 $('#cePayZain').addEventListener('click',()=>payout('زين كاش'));
 $('#cePayBank').addEventListener('click',()=>payout('مصرف الرافدين'));
 setInterval(()=>{if(onlineSince)renderCap();},60000);
+
+
+/* ================= welcome message (by age + chosen title + time) ================= */
+function welcomeMsg(cargo){
+  const r=S.rider,age=r.age||0,cap='الكابتن '+CAPTAIN.first;
+  let t=r.title||'none';
+  const fem=t==='ukht'||t==='hajia';
+  const h=new Date().getHours(),day=new Date().getDay();
+  let pre='';
+  if(day===5)pre='جمعة مباركة، ';
+  else if(h<12)pre='صباح الخير والورد، ';
+  else if(h>=18)pre=fem?'مساچ الله بالخير، ':'مساك الله بالخير، ';
+  let body;
+  if(t==='haji')body=`هلا بالحجي، الله يحفظك. ${cap} جايك، دقايق ويوصل.`;
+  else if(t==='hajia')body=`هلا بالحجية، تدللين. ${cap} بالطريق إليچ.`;
+  else if(t==='ukht')body=`هلا بيچ، ${cap} بالطريق. تكدرين تشاركين الرحلة ويه أهلچ من زر «شارك الرحلة».`;
+  else if(t==='akh')body=age&&age<30?`هلا عيوني، ${cap} بالطريق لا تتأخر عليه.`:`هلا بيك أخوي، ${cap} بالطريق إليك.`;
+  else body=age>=40?`هلا بالخير، الله يحفظك. ${cap} جايك، دقايق ويوصل.`:`هلا بيك، ${cap} بالطريق إليك.`;
+  if(cargo)body+=fem?' رتّبي الأغراض كرب الباب حتى يخلص التحميل بسرعة.':' رتّب الأغراض كرب الباب حتى يخلص التحميل بسرعة.';
+  return pre+body;
+}
+
+/* ================= quick support chat (scripted demo of the AI assistant) ================= */
+const BOT=APP==='captain'?{name:'زهراء',av:'ز',human:'حسين'}:{name:'كاظم',av:'ك',human:'نور'};
+const has=(t,ws)=>ws.some(w=>t.includes(w));
+const URGENT=['حادث','خطر','تحرش','ضربني','اعتداء','طوارئ','خايف','خايفة','مسلح','سرقة','سرقني'];
+const RIDER_RULES=[
+  {k:URGENT,urgent:true,r:()=>`سلامتك أهم شي. إذا بخطر هسه:\nالشرطة 104 · الإسعاف 122 · الدفاع المدني 115\nوحوّلتك لموظف حقيقي هسه حتى يتابع وياك، وتكدر تشارك موقعك من زر «شارك الرحلة».`},
+  {k:['زايد','غالي','سعر','اجرة','أجرة','حسبني','حساب','فلوس زايدة'],r:()=>{const h=S.history[0];return `لا يهمك. آخر رحلة إلك كانت ${h.from} ← ${h.to} بـ ${fmt(h.fare)} د.ع.\nإذا تحس السعر زايد، كلّي شكد كان المفروض، وأفتحلك طلب مراجعة. وإذا طلع الحق وياك يرجعلك الفرق بالمحفظة خلال 24 ساعة.`;}},
+  {k:['نسيت','ضاع','ضايع','جنطة','جنطتي','موبايلي','محفظتي','غرض'],r:()=>`ولا يهمك، هسه أبلغ الكابتن ${CAPS[S.history[0].cap||'taxi'].first} من آخر رحلة.\nكلّي شنو الغرض ولونه، وأقرب مكان يناسبك تستلمه بيه. التوصيل للغرض يكون بأجرة مشوار عادي.`},
+  {k:['تأخر','متأخر','ما اجه','ما إجه','وين الكابتن','بطيء','واكف'],r:()=>`حقك علينا. تكدر تشوف مكان الكابتن مباشرة على الخريطة.\nإذا تأخر أكثر من 10 دقايق عن الوقت المكتوب، تكدر تلغي بدون رسوم، وأضيفلك كود خصم HALA10 للمرة الجاية.`},
+  {k:['الغي','ألغي','الغاء','إلغاء','كنسل'],r:()=>`الإلغاء مجاني خلال أول دقيقتين من الطلب.\nبعدها تنحسب 1,000 د.ع، إلا إذا الكابتن تأخر أكثر من 10 دقايق، فيكون الإلغاء مجاني.`},
+  {k:['محفظة','شحن','بطاقة','زين كاش','دفع','ادفع','رصيد'],r:()=>`رصيد محفظتك هسه ${fmt(S.balance)} د.ع.\nتكدر تشحن من «المحفظة»، أو تدفع نقداً أو بالبطاقة أو زين كاش. تغيّر طريقة الدفع قبل لا تطلب.`},
+  {k:['كود','خصم','عرض','تخفيض'],r:()=>`عندك كود HALA10: خصم 10% لحد 3,000 د.ع.\nاكتبه بخانة «كود خصم» قبل لا تطلب. وإذا تدعي صديق تاخذ 5,000 د.ع.`},
+  {k:['نقل','اثاث','أثاث','ثلاجة','غسالة','عمال','بيكب','لوري','ستوتة','طابوق','سمنت'],r:()=>`خدمة النقل داخل البصرة: تختار «نقل وتوصيل» وتحدد الأغراض، والتطبيق يقترح السيارة المناسبة (ستوتة، بيكب، لوري صغير).\nالعامل الواحد بـ 5,000 د.ع، والتغليف بـ 5,000، وتكدر تحجز بموعد.`},
+  {k:['شكوى','اشتكي','أشتكي','اسلوب','أسلوب','سواق','سايق','الكابتن','دخن','تدخين'],r:()=>`آسفين على اللي صار. كلّي شنو صار بالتفصيل وأي رحلة، وأرفع الشكوى لقسم الجودة.\nنراجع كل شكوى خلال 24 ساعة، والكابتن ما يعرف منو اشتكى.`},
+  {k:['حساب','رقمي','اسمي','بياناتي','احذف','حذف'],r:()=>`تكدر تعدّل اسمك ورقمك وعمرك من «حسابي». وإذا تريد تحذف حسابك وكل بياناتك، كلّي وأفتحلك الطلب، وينحذف خلال 7 أيام.`},
+  {k:['شكرا','شكراً','مشكور','تسلم','عاشت','الله يخليك'],r:()=>'العفو عيوني، بالخدمة دايماً. إذا احتجت أي شي آني هنا.'},
+  {k:['هلا','مرحبا','السلام','شلونك','شونك','صباح','مساء'],r:()=>`هلا بيك وعليكم السلام. آني ${BOT.name}، شنو أكدر أخدمك؟`},
+];
+const CAP_RULES=[
+  {k:URGENT,urgent:true,r:()=>`سلامتك أهم شي. إذا بخطر هسه:\nالشرطة 104 · الإسعاف 122 · الدفاع المدني 115\nوحوّلتك لموظف حقيقي هسه حتى يتابع وياك.`},
+  {k:['ارباح','أرباح','تحويل','رصيد','فلوسي','سحب'],r:()=>`صافي أرباحك اليوم ${fmt(todayNet())} د.ع، ورصيدك الجاهز للتحويل ${fmt(Math.max(0,C.balance))} د.ع.\nتحوّله من «الأرباح» لزين كاش أو البنك، ويوصل خلال ساعة بأوقات الدوام.`},
+  {k:['عمولة','كاش','نقد'],r:()=>`عمولة هلا 15% من كل رحلة. برحلات الكاش، العمولة تنخصم من رصيدك عند هلا، وبالرحلات الإلكترونية ينضاف صافي ربحك مباشرة.\nالكاش اللي بيدك اليوم: ${fmt(C.cash)} د.ع.`},
+  {k:['مستمسكات','تأمين','اجازة','إجازة','سنوية','فحص','وثيقة'],r:()=>`عندك وثيقة التأمين تنتهي بعد 18 يوم، وفحص السيارة الدوري مطلوب قبل 30/11.\nصوّر الوثيقة الجديدة وارفعها من «حسابي ← المستمسكات»، ونراجعها خلال يوم.`},
+  {k:['زبون','ما نزل','ما اجه','ما إجه','انتظار','انتظرت'],r:()=>`إذا انتظرت أكثر من 5 دقايق والزبون ما إجه، اضغط «الزبون ما إجه». الرحلة تنلغي وتاخذ رسوم انتظار 2,000 د.ع.`},
+  {k:['طلبات','ماكو طلبات','قليلة','ماكو شغل'],r:()=>`روح للمناطق البرتقالية بالخريطة، بيها طلب عالي وأسعار ×1.2 لـ ×1.3 (العشار، ساحة سعد، الجزائر).\nوأكثر وقت بيه طلبات: من 7 لـ 9 الصبح، ومن 4 لـ 9 بالليل.`},
+  {k:['عطل','علك','تعليق','ما يشتغل','خريطة','gps','جي بي اس'],r:()=>`جرّب تسكّر التطبيق وتفتحه، وتأكد إن الموقع (GPS) مفعّل للتطبيق.\nإذا بقت المشكلة، دزلي سكرين شوت وأرفعها للفريق التقني.`},
+  {k:['شكرا','شكراً','مشكور','تسلم','عاشت','الله يخليك'],r:()=>'العفو يا بطل، الله وياك بدوامك.'},
+  {k:['هلا','مرحبا','السلام','شلونك','شونك','صباح','مساء'],r:()=>`هلا بيك يا كابتن وعليكم السلام. آني ${BOT.name}، شنو تحتاج؟`},
+];
+const QUICK=APP==='captain'?['متى تتحول أرباحي؟','الزبون ما إجه','ماكو طلبات','تجديد التأمين','عمولة الكاش']:['الأجرة طلعت زايدة','نسيت غرض بالسيارة','الكابتن تأخر','شلون ألغي الطلب؟','عندي كود خصم؟','نقل أثاث'];
+let chatStarted=false,human=false;
+function addMsg(cls,txt,who){const b=$('#chatBody');const d=document.createElement('div');d.className='msg '+cls;if(who){const w=document.createElement('span');w.className='who';w.textContent=who;d.appendChild(w);}d.appendChild(document.createTextNode(txt));b.appendChild(d);b.scrollTop=b.scrollHeight;}
+function botSay(txt,cls='bot',who){const b=$('#chatBody');const t=document.createElement('div');t.className='typing';t.textContent=(who||BOT.name)+' دا يكتب…';b.appendChild(t);b.scrollTop=b.scrollHeight;
+  setTimeout(()=>{t.remove();addMsg(cls,txt,who||BOT.name+' · مساعد ذكي');},reduce?50:Math.min(1600,500+txt.length*8));}
+function greetName(){if(APP==='captain')return 'يا كابتن '+CAPS.taxi.first;const t=S.rider.title;return t==='haji'?'حجي':t==='hajia'?'حجية':t==='ukht'?S.rider.name.split(' ')[0]:S.rider.name.split(' ')[0];}
+function openSupport(){
+  $('#botName').textContent=BOT.name;$('#botName2').textContent=BOT.name;$('#botAv').textContent=BOT.av;
+  if(chatStarted)return;chatStarted=true;
+  $('#chatQuick').innerHTML='';QUICK.forEach(q=>{const b=document.createElement('button');b.type='button';b.textContent=q;b.addEventListener('click',()=>userSay(q));$('#chatQuick').appendChild(b);});
+  addMsg('sys','اليوم');
+  botSay(`هلا وياك ${greetName()}، آني ${BOT.name} مساعد هلا الذكي. شنو أكدر أخدمك اليوم؟`);
+}
+function toHuman(reason){
+  if(human)return;human=true;
+  addMsg('sys',`تم تحويلك لموظف خدمة ${APP==='captain'?'الكباتن':'الزبائن'}`);
+  setTimeout(()=>addMsg('human',`هلا بيك، آني ${BOT.human} من فريق هلا. شفت المحادثة كلها و${reason?'دا أتابع حالتك هسه.':'هسه وياك، تفضّل.'}\nوإذا تحب نتصل بيك: ${APP==='captain'?'+964 780 000 4253':'+964 780 000 4252'}`,BOT.human+' · موظف حقيقي'),reduce?50:2500);
+}
+function userSay(txt){
+  txt=txt.trim();if(!txt)return;addMsg('mine',txt);
+  if(human){setTimeout(()=>addMsg('human','وصلت رسالتك، لحظات وأرد عليك.',BOT.human+' · موظف حقيقي'),reduce?50:1500);return;}
+  const rules=APP==='captain'?CAP_RULES:RIDER_RULES;const r=rules.find(x=>has(txt,x.k));
+  if(r){botSay(r.r(),r.urgent?'bot urgent':'bot');if(r.urgent)setTimeout(()=>toHuman(true),reduce?100:1800);}
+  else botSay('ما فهمت عليك زين. تكدر توضح أكثر؟ أو اختار من الأزرار تحت، أو اضغط «حوّلني لموظف».');
+}
+$('#chatForm').addEventListener('submit',e=>{e.preventDefault();userSay($('#chatIn').value);$('#chatIn').value='';});
+$('#toHuman').addEventListener('click',()=>toHuman(false));
 
 /* ================= boot ================= */
 function renderAll(){renderWallet();renderMethods();renderTx();renderRidePay();renderRider();renderCap();renderHistory();renderChips();renderTrip();fillCaptain();}
