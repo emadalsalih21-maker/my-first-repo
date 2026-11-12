@@ -125,7 +125,7 @@ label.field{display:flex;flex-direction:column;gap:5px;font-size:.85rem;font-wei
 .layer-sw button{border:0;background:transparent;padding:5px 11px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.82rem;color:var(--muted)}
 .layer-sw button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-strong)}
 .map-hint{position:absolute;z-index:500;bottom:12px;right:12px;background:var(--surface);border:1px solid var(--line);padding:5px 12px;border-radius:99px;font-size:.8rem;box-shadow:var(--shadow);max-width:calc(100% - 90px)}
-.tile-warn{position:absolute;z-index:500;top:56px;right:12px;left:12px;margin:auto;width:fit-content;max-width:calc(100% - 24px);background:var(--warn-soft);color:var(--warn);padding:6px 12px;border-radius:10px;font-size:.8rem;font-weight:600;text-align:center}
+.tile-warn{border:0;cursor:pointer;font:inherit;position:absolute;z-index:500;top:56px;right:12px;left:12px;margin:auto;width:fit-content;max-width:calc(100% - 24px);background:var(--warn-soft);color:var(--warn);padding:6px 12px;border-radius:10px;font-size:.8rem;font-weight:600;text-align:center}
 
 .panel{position:sticky;top:calc(env(safe-area-inset-top,0px) + 78px)}
 .modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--surface-2);padding:4px;border-radius:12px}
@@ -392,7 +392,7 @@ textarea.input{resize:vertical;font:inherit}
             <button class="fab" id="fabLocate" type="button" title="موقعي" aria-label="موقعي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
             <button class="fab" id="fabFit" type="button" title="عرض الرحلة كاملة" aria-label="عرض الرحلة كاملة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
           </div>
-          <p class="tile-warn" id="tileWarn" hidden>صور الخريطة ما دا تتحمّل. تأكد من اتصال الإنترنت.</p>
+          <button type="button" class="tile-warn" id="tileWarn" hidden>صور الخريطة ما دا تتحمّل. تأكد من الإنترنت واضغط هنا حتى نعيد المحاولة</button>
           <span class="map-hint" id="mapHint">اضغط على الخريطة لتحديد الوجهة</span>
         </div>
 
@@ -915,21 +915,44 @@ const CENTER=[30.512,47.815], VIEWBOX='47.55,30.70,48.10,30.30';
 const map=L.map('map',{maxBounds:L.latLngBounds([30.15,47.35],[30.85,48.25]),minZoom:10,maxZoom:19}).setView(CENTER,13);
 map.zoomControl.setPosition('topleft');
 L.control.scale({position:'bottomleft',imperial:false}).addTo(map);
-const LAYERS={
-  clean:L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap © CARTO'}),
-  streets:L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}),
-  sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri'}),
-};
-let curLayer='clean',tileErr=0,tileOk=0;
-Object.values(LAYERS).forEach(l=>{l.on('tileerror',()=>{tileErr++;if(tileErr>6&&!tileOk)$('#tileWarn').hidden=false;});l.on('tileload',()=>{tileOk++;$('#tileWarn').hidden=true;});});
-LAYERS.clean.addTo(map);
+/* base maps: several providers; if one is blocked or down we switch to the next automatically */
+const PROVIDERS=[
+  {id:'clean',url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',o:{subdomains:'abcd',attribution:'© OpenStreetMap © CARTO'}},
+  {id:'streets',url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',o:{attribution:'© OpenStreetMap'}},
+  {id:'esri',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',o:{attribution:'Tiles © Esri'}},
+  {id:'sat',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',o:{attribution:'Imagery © Esri'},manual:true},
+];
+function baseMap(m,warnEl,onSwitch){
+  const st={layer:null,id:null,ok:0,err:0,timer:null,tried:new Set()};
+  function use(id,auto){
+    const p=PROVIDERS.find(x=>x.id===id);if(st.layer)m.removeLayer(st.layer);clearTimeout(st.timer);
+    st.id=id;st.ok=0;st.err=0;st.tried.add(id);
+    st.layer=L.tileLayer(p.url,{maxZoom:19,...p.o}).addTo(m);
+    st.layer.on('tileload',()=>{st.ok++;if(warnEl)warnEl.hidden=true;});
+    st.layer.on('tileerror',()=>{st.err++;if(!st.ok&&st.err>=4)next();});
+    st.timer=setTimeout(()=>{if(!st.ok)next();},7000);
+    if(onSwitch)onSwitch(id,auto);
+  }
+  function next(){
+    clearTimeout(st.timer);
+    const nx=PROVIDERS.find(p=>!p.manual&&!st.tried.has(p.id));
+    if(nx){use(nx.id,true);}
+    else if(warnEl){warnEl.hidden=false;}
+  }
+  st.use=id=>{st.tried=new Set();use(id,false);};
+  st.retry=()=>{st.tried=new Set();use(PROVIDERS[0].id,true);};
+  use(PROVIDERS[0].id,true);
+  return st;
+}
+const BASE=baseMap(map,$('#tileWarn'),id=>{$$('.layer-sw button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.layer===id||(id==='esri'&&x.dataset.layer==='streets')));});
+$('#tileWarn').addEventListener('click',()=>{$('#tileWarn').hidden=true;BASE.retry();});
 /* service area: Basra city only */
 const AREA=[[30.62,47.64],[30.62,47.90],[30.53,47.93],[30.46,48.00],[30.40,47.97],[30.36,47.70],[30.42,47.62]];
 function inArea(ll){const x=ll.lng,y=ll.lat;let ins=false;for(let i=0,j=AREA.length-1;i<AREA.length;j=i++){const yi=AREA[i][0],xi=AREA[i][1],yj=AREA[j][0],xj=AREA[j][1];if(((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))ins=!ins;}return ins;}
 function drawArea(m){L.polygon([[[29.6,46.6],[29.6,49],[31.4,49],[31.4,46.6]],AREA],{stroke:false,fillColor:'#12343B',fillOpacity:.16,interactive:false}).addTo(m);
   L.polygon(AREA,{color:'#12343B',weight:2,dashArray:'6 6',fill:false,interactive:false}).addTo(m).bindTooltip('حدود الخدمة: داخل مدينة البصرة',{sticky:true});}
 drawArea(map);
-$$('.layer-sw button').forEach(b=>b.addEventListener('click',()=>{map.removeLayer(LAYERS[curLayer]);curLayer=b.dataset.layer;LAYERS[curLayer].addTo(map);$$('.layer-sw button').forEach(x=>x.setAttribute('aria-pressed',x===b));}));
+$$('.layer-sw button').forEach(b=>b.addEventListener('click',()=>BASE.use(b.dataset.layer)));
 
 const pinIcon=k=>L.divIcon({className:'',html:`<div class="pin ${k==='a'?'pin-a':'pin-b'}" data-l="${k==='a'?'من':'إلى'}"></div>`,iconSize:[30,40],iconAnchor:[15,38]});
 const TRUCK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h12v10H2zM14 9h4l4 4v3h-8z"/><circle cx="6" cy="17" r="1.5" fill="currentColor"/><circle cx="18" cy="17" r="1.5" fill="currentColor"/></svg>';
@@ -1258,7 +1281,7 @@ let cmap=null,capMarker=null,capPos=L.latLng(30.5105,47.8250),cJob=null,cLine=nu
 function initCapMap(){
   if(cmap) return;
   cmap=L.map('capMap',{maxBounds:L.latLngBounds([30.15,47.35],[30.85,48.25]),minZoom:10,maxZoom:19}).setView(capPos,14);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap © CARTO'}).addTo(cmap);drawArea(cmap);
+  baseMap(cmap,null);drawArea(cmap);
   ZONES.forEach(z=>{const p=placeBy(z.n);L.circle(p.c,{radius:450,color:'#F2B705',weight:1,fillColor:'#F2B705',fillOpacity:.14}).addTo(cmap)
     .bindTooltip(`طلب عالي ×${z.m}`,{permanent:true,direction:'center',className:'zone-lbl'});});
   capMarker=L.marker(capPos,{icon:taxiIcon(true,CAPS.taxi),zIndexOffset:1000,interactive:false}).addTo(cmap);
