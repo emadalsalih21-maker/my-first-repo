@@ -487,7 +487,7 @@ textarea.input{resize:vertical;font:inherit}
 
           <!-- step: live trip -->
           <div class="stack" data-step="live" hidden>
-            <div class="row between"><h3 id="liveTitle">الكابتن بالطريق إليك</h3><span class="chip chip-accent num" id="liveEta"></span></div>
+            <div class="row between"><h3 id="liveTitle">الكابتن جايلك بالطريق</h3><span class="chip chip-accent num" id="liveEta"></span></div>
             <div class="progress"><i id="liveBar"></i></div>
             <div class="greet" id="greet" hidden role="status"><img src="assets/logo-64.png" alt=""><div><b>رسالة من هلا</b><p id="greetTxt"></p></div></div>
             <button class="cap-card" type="button" data-open-captain>
@@ -1196,7 +1196,7 @@ function startApproach(){
   map.fitBounds(L.latLngBounds([start,P.a.ll,P.b.ll]),{padding:[50,50],maxZoom:16});
   $('#tFrom').textContent=current.from;$('#tTo').textContent=current.to;$('#tFare').textContent=fmt(current.fare-current.disc)+' د.ع';
   const cg=current.svc==='cargo';
-  $('#liveTitle').textContent=CAPTAIN.first+(cg?' بالطريق لموقع الاستلام':' بالطريق إليك');setStep('live');
+  $('#liveTitle').textContent=CAPTAIN.first+(cg?' بالطريق لموقع الاستلام':' جايلك بالطريق');setStep('live');
   $('#greet').hidden=true;timers.push(setTimeout(()=>{$('#greetTxt').textContent=welcomeMsg(cg);$('#greet').hidden=false;},reduce?0:1000));
   along([start,P.a.ll],reduce?800:6000,t=>{$('#liveBar').style.width=t*100+'%';$('#liveEta').textContent=Math.max(1,Math.ceil(current.eta*(1-t)))+' د';},()=>{
     toast(cg?'وصل الكابتن، دا يحمّلون الأغراض':'الكابتن وصل! اطلع لا تتأخر');
@@ -1428,7 +1428,7 @@ $('#cDone').addEventListener('click',()=>{
 document.addEventListener('click',async e=>{
   const a=e.target.closest('[data-cact]');if(!a||!cJob)return;const dr=$('#cDrawer');const same=!dr.hidden&&dr.dataset.act===a.dataset.cact;dr.hidden=same;dr.dataset.act=a.dataset.cact;if(same)return;
   if(a.dataset.cact==='call')dr.innerHTML=`<span>رقم الزبون ${esc(cJob.rider.n)}:</span><b class="ltr num" style="user-select:all">${cJob.rider.ph}</b><div class="row"><button type="button" data-copy="${cJob.rider.ph}">نسخ الرقم</button></div>`;
-  if(a.dataset.cact==='msg')dr.innerHTML=`<span>رسالة سريعة للزبون:</span><div class="row">${['بالطريق إليك','الزحمة شوية، دقايق وأوصل','وصلت، آني كدام الباب','ما لكيت المكان، تكدر تتصل؟'].map(m=>`<button type="button" data-msg="${m}">${m}</button>`).join('')}</div>`;
+  if(a.dataset.cact==='msg')dr.innerHTML=`<span>رسالة سريعة للزبون:</span><div class="row">${['جايلك بالطريق','الزحمة شوية، دقايق وأوصل','وصلت، آني كدام الباب','ما لكيت المكان، تكدر تتصل؟'].map(m=>`<button type="button" data-msg="${m}">${m}</button>`).join('')}</div>`;
   if(a.dataset.cact==='sos')dr.innerHTML=`<b style="color:var(--bad)">أرقام الطوارئ بالعراق</b><span>الشرطة: <b class="num">104</b> · الإسعاف: <b class="num">122</b> · الدفاع المدني: <b class="num">115</b></span><span class="small muted">دعم الكباتن: <b class="ltr num">+964 780 000 4253</b></span>`;
 });
 $('#capFit').addEventListener('click',()=>{if(cmap)cmap.flyTo(capPos,15,{duration:reduce?0:.6});});
@@ -1473,10 +1473,10 @@ function welcomeMsg(cargo){
   else if(h>=18)pre=fem?'مساچ الله بالخير، ':'مساك الله بالخير، ';
   let body;
   if(t==='haji')body=`هلا بالحجي، الله يحفظك. ${cap} جايك، دقايق ويوصل.`;
-  else if(t==='hajia')body=`هلا بالحجية، تدللين. ${cap} بالطريق إليچ.`;
+  else if(t==='hajia')body=`هلا بالحجية، تدللين. ${cap} جايلچ بالطريق.`;
   else if(t==='ukht')body=`هلا بيچ، ${cap} بالطريق. تكدرين تشاركين الرحلة ويه أهلچ من زر «شارك الرحلة».`;
-  else if(t==='akh')body=age&&age<30?`هلا عيوني، ${cap} بالطريق لا تتأخر عليه.`:`هلا بيك أخوي، ${cap} بالطريق إليك.`;
-  else body=age>=40?`هلا بالخير، الله يحفظك. ${cap} جايك، دقايق ويوصل.`:`هلا بيك، ${cap} بالطريق إليك.`;
+  else if(t==='akh')body=age&&age<30?`هلا عيوني، ${cap} بالطريق لا تتأخر عليه.`:`هلا بيك أخوي، ${cap} بالطريق الك.`;
+  else body=age>=40?`هلا بالخير، الله يحفظك. ${cap} جايك، دقايق ويوصل.`:`هلا بيك، ${cap} بالطريق الك.`;
   if(cargo)body+=fem?' رتّبي الأغراض كرب الباب حتى يخلص التحميل بسرعة.':' رتّب الأغراض كرب الباب حتى يخلص التحميل بسرعة.';
   return pre+body;
 }
