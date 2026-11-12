@@ -268,6 +268,40 @@ th{font-size:.75rem;color:var(--muted);font-weight:600}
 .toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:99px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:2000;max-width:calc(100% - 32px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* role switch + captain app */
+.role-sw{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:3px;gap:2px}
+.role-sw a{padding:5px 14px;border-radius:99px;text-decoration:none;font-weight:700;font-size:.85rem;color:var(--muted)}
+.role-sw a[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.status-chip{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.85rem}
+.status-chip::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.status-chip.on::before{background:var(--ok);box-shadow:0 0 0 4px var(--ok-soft)}
+.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.mini div{background:var(--surface-2);border-radius:10px;padding:8px 4px}
+.mini b{display:block;font-family:var(--f-display);font-size:1.1rem}
+.mini span{font-size:.72rem;color:var(--muted)}
+.goal{display:flex;flex-direction:column;gap:6px;font-size:.85rem}
+.big-btn{padding:16px;font-size:1.1rem;border-radius:14px}
+.btn-ok{background:var(--ok);color:#fff;border-color:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none;transform:none}
+.ring{--p:100;width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--surface) 0);display:grid;place-items:center;flex:none}
+.ring b{width:50px;height:50px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-family:var(--f-display);font-size:1.3rem;color:var(--accent)}
+.req-card{border:2px solid var(--accent);background:var(--accent-soft);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px}
+.req-fare{font-family:var(--f-display);font-size:1.8rem;line-height:1.1}
+.rider-row{display:flex;align-items:center;gap:10px}
+.rider-av{width:44px;height:44px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-weight:700;flex:none;border:1px solid var(--line)}
+.nav-ext{position:absolute;z-index:500;top:12px;right:12px;background:var(--navy);color:var(--on-navy);padding:7px 14px;border-radius:99px;font-weight:700;font-size:.85rem;text-decoration:none;box-shadow:var(--shadow)}
+.zone-lbl{background:var(--surface);color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:1px 8px;font-weight:700;font-size:11px;white-space:nowrap;font-family:var(--f-body);box-shadow:none}
+.zone-lbl::before{display:none}
+.timer-big{font-family:var(--f-display);font-size:2rem;text-align:center}
+.breakdown{display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:.92rem}
+.breakdown .neg{color:var(--bad)}
+.breakdown .tot{font-weight:700;border-top:1px dashed var(--line);padding-top:8px;font-size:1.05rem}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.set-row:last-child{border-bottom:0}
+.seg{display:flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:5px 10px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.82rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
 @media (max-width: 1100px){ .ride{grid-template-columns:minmax(0,1fr) 350px} .stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @media (max-width: 900px){
   .shell{grid-template-columns:minmax(0,1fr);padding-bottom:calc(90px + env(safe-area-inset-bottom,0px));padding-top:12px}
@@ -282,7 +316,7 @@ th{font-size:.75rem;color:var(--muted);font-weight:600}
   .ride-head{display:none}
 }
 @media (max-width: 520px){
-  .brand-tag{display:none} .demo-badge{font-size:.66rem;padding:2px 8px}
+  .brand-tag{display:none} .demo-badge{display:none} .brand-name{font-size:1.2rem}
   .stat .v{font-size:1.2rem}
   .cap-hero{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
   .cap-hero .row,.cap-hero .big-rating{justify-content:center}
@@ -298,15 +332,22 @@ th{font-size:.75rem;color:var(--muted);font-weight:600}
     <span><span class="brand-name">هلا احمد</span><span class="brand-tag">تكسي البصرة بلمسة وحدة</span></span>
   </a>
   <span class="demo-badge">نسخة تجريبية</span>
+  <div class="role-sw" role="group" aria-label="نوع الحساب"><a href="#ride" id="roleRider" aria-current="true">زبون</a><a href="#cap-home" id="roleCap" aria-current="false">كابتن</a></div>
   <a class="avatar" id="topAvatar" href="#account" title="حسابي">م ح</a>
 </header>
 
 <div class="shell">
-  <nav class="nav" aria-label="الأقسام">
+  <nav class="nav" id="riderNav" aria-label="الأقسام">
     <a href="#ride" data-nav="ride"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>اطلب رحلة</a>
     <a href="#trips" data-nav="trips"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>رحلاتي</a>
     <a href="#wallet" data-nav="wallet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg>المحفظة</a>
     <a href="#account" data-nav="account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>حسابي</a>
+  </nav>
+  <nav class="nav" id="capNav" aria-label="أقسام الكابتن" hidden>
+    <a href="#cap-home" data-nav="cap-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 14v7M10 12H3.5M14 12h6.5"/></svg>الدوام</a>
+    <a href="#cap-earn" data-nav="cap-earn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>الأرباح</a>
+    <a href="#cap-trips" data-nav="cap-trips"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>رحلاتي</a>
+    <a href="#cap-me" data-nav="cap-me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>حسابي</a>
   </nav>
 
   <main>
@@ -544,31 +585,141 @@ th{font-size:.75rem;color:var(--muted);font-weight:600}
               <a class="link-row" href="#trips"><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="grow">سجل الرحلات</span></a>
               <button class="link-row" type="button" id="btnInvite"><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7"/></svg></span><span class="grow">ادعُ صديق واحصل على 5,000 د.ع<br><span class="small muted">كودك: <b class="ltr">HALA-MUSTAFA</b></span></span></button>
               <button class="link-row" type="button" id="btnSupport"><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7M12 17v.5"/></svg></span><span class="grow">المساعدة والدعم<br><span class="small muted">خدمة الزبائن: <b class="ltr num">+964 780 000 4252</b></span></span></button>
-              <a class="link-row" href="#driver"><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 14v7M10 12H3.5M14 12h6.5"/></svg></span><span class="grow">وضع الكابتن<br><span class="small muted">لوحة السائق: الطلبات والأرباح والمستمسكات</span></span></a>
+              <a class="link-row" href="#cap-home"><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 14v7M10 12H3.5M14 12h6.5"/></svg></span><span class="grow">تطبيق الكابتن<br><span class="small muted">استقبل طلبات، تابع أرباحك ومستمسكاتك</span></span></a>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ================= DRIVER (captain mode) ================= -->
-    <section data-view="driver" hidden>
-      <div class="view-head">
-        <div class="row" style="gap:12px"><span class="cap-photo" data-cap-photo></span><div><h2>لوحة الكابتن</h2><p class="muted small"><span data-cap-name></span> · <a href="#captain">عرض ملفي كما يشوفه الزبون</a></p></div></div>
-        <label class="switch"><input type="checkbox" id="online" checked><span class="track"></span><span id="onlineLbl">متصل · تستقبل طلبات</span></label>
+    <!-- ================= CAPTAIN APP: HOME ================= -->
+    <section data-view="cap-home" hidden>
+      <div class="ride">
+        <div class="map-wrap">
+          <div id="capMap" style="position:absolute;inset:0" dir="ltr" aria-label="خريطة الكابتن"></div>
+          <a class="nav-ext" id="navExt" href="#" target="_blank" rel="noopener" hidden>افتح الطريق بخرائط Google ↗</a>
+          <div class="map-tools"><button class="fab" id="capFit" type="button" title="موقعي" aria-label="موقعي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button></div>
+        </div>
+        <div class="card stack panel" id="capPanel">
+          <div class="row between">
+            <div class="row" style="gap:10px"><span class="cap-photo sm" data-cap-photo></span><div><b data-cap-name></b><br><span class="status-chip" id="cStatus">غير متصل</span></div></div>
+            <label class="switch"><input type="checkbox" id="cOnline"><span class="track"></span></label>
+          </div>
+          <div class="mini">
+            <div><b class="num" id="cmEarn"></b><span>أرباح اليوم (د.ع)</span></div>
+            <div><b class="num" id="cmTrips"></b><span>رحلات اليوم</span></div>
+            <div><b class="num" id="cmHours"></b><span>ساعات الدوام</span></div>
+          </div>
+          <div class="goal"><div class="row between"><span>هدف اليوم: <b class="num" id="cGoalTxt"></b> رحلة ← مكافأة <b class="num" id="cGoalBonus"></b> د.ع</span></div><div class="progress"><i id="cGoalBar"></i></div></div>
+
+          <div class="stack" data-cstep="offline">
+            <p class="muted small">أنت غير متصل. ابدأ الدوام حتى توصلك طلبات الزبائن القريبة منك.</p>
+            <button class="btn btn-ok big-btn btn-block" id="cGo" type="button">ابدأ الدوام</button>
+          </div>
+          <div class="stack" data-cstep="idle" hidden style="text-align:center">
+            <div class="spinner" aria-hidden="true"></div>
+            <h3>ندوّر لك على طلبات…</h3>
+            <p class="muted small">المناطق البرتقالية على الخريطة بيها طلب عالي وأسعار أعلى.</p>
+          </div>
+          <div class="stack" data-cstep="request" hidden><div id="cReq"></div></div>
+          <div class="stack" data-cstep="pickup" hidden>
+            <div class="row between"><h3>روح للزبون</h3><span class="chip chip-accent num" id="cPickEta"></span></div>
+            <div class="progress"><i id="cPickBar"></i></div>
+            <div class="rider-row" id="cRider1"></div>
+            <div class="points"><span class="dot-a"></span><span class="val" id="cPickName"></span><span></span></div>
+            <div class="actions" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+              <button type="button" data-cact="call"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>اتصال بالزبون</button>
+              <button type="button" data-cact="msg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></svg>رسالة</button>
+              <button type="button" data-cact="sos" class="sos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16v.5"/></svg>طوارئ</button>
+            </div>
+            <div class="drawer" id="cDrawer" hidden></div>
+            <button class="btn btn-primary big-btn btn-block" id="cArrived" type="button" disabled>وصلت لموقع الزبون</button>
+            <button class="btn btn-ghost btn-danger" id="cCancel" type="button">إلغاء الرحلة</button>
+          </div>
+          <div class="stack" data-cstep="waiting" hidden>
+            <h3>بانتظار الزبون</h3>
+            <div class="rider-row" id="cRider2"></div>
+            <div class="timer-big num" id="cWait">0:00</div>
+            <p class="muted small" style="text-align:center">الانتظار مجاني أول 3 دقايق، وبعدها ينحسب 250 د.ع لكل دقيقة.</p>
+            <button class="btn btn-ok big-btn btn-block" id="cStart" type="button">الزبون صعد، ابدأ الرحلة</button>
+            <button class="btn btn-ghost btn-danger" id="cNoShow" type="button">الزبون ما إجه (إلغاء مع رسوم)</button>
+          </div>
+          <div class="stack" data-cstep="trip" hidden>
+            <div class="row between"><h3>بالطريق للوجهة</h3><span class="chip chip-accent num" id="cTripEta"></span></div>
+            <div class="progress"><i id="cTripBar"></i></div>
+            <div class="points"><span class="dot-b"></span><span class="val" id="cDropName"></span><span></span></div>
+            <div class="receipt small"><span class="muted">الزبون</span><span id="cTripRider"></span><span class="muted">الدفع</span><span id="cTripPay"></span><span class="muted">الأجرة المتوقعة</span><b id="cTripFare"></b></div>
+            <button class="btn btn-primary big-btn btn-block" id="cEnd" type="button" disabled>إنهاء الرحلة</button>
+          </div>
+          <div class="stack" data-cstep="collect" hidden>
+            <div style="text-align:center"><span class="chip chip-ok">انتهت الرحلة</span></div>
+            <div id="cCollectBox" class="stack"></div>
+            <div><p class="small muted" style="text-align:center;margin-bottom:4px">قيّم الزبون</p><div class="stars" id="cStars"></div></div>
+            <button class="btn btn-ok big-btn btn-block" id="cDone" type="button"></button>
+          </div>
+        </div>
       </div>
+    </section>
+
+    <!-- ================= CAPTAIN APP: EARNINGS ================= -->
+    <section data-view="cap-earn" hidden>
+      <div class="view-head"><div><h2>الأرباح</h2><p class="muted small">أرباحك، عمولة هلا، والتحويل لحسابك.</p></div></div>
       <div class="stack">
         <div class="stats">
-          <div class="stat"><div class="v num" id="dEarn"></div><div class="k">أرباح اليوم (د.ع)</div></div>
-          <div class="stat"><div class="v num" id="dTrips"></div><div class="k">رحلات اليوم</div></div>
-          <div class="stat"><div class="v num" data-cap-rating></div><div class="k">تقييمك</div></div>
-          <div class="stat"><div class="v num" data-cap-accept></div><div class="k">نسبة القبول</div></div>
+          <div class="stat"><div class="v num" id="ceToday"></div><div class="k">صافي اليوم (د.ع)</div></div>
+          <div class="stat"><div class="v num" id="ceWeek"></div><div class="k">صافي الأسبوع (د.ع)</div></div>
+          <div class="stat"><div class="v num" id="ceTrips"></div><div class="k">رحلات اليوم</div></div>
+          <div class="stat"><div class="v num" id="ceAvg"></div><div class="k">معدل الرحلة (د.ع)</div></div>
         </div>
-        <div id="reqWrap"></div>
         <div class="grid-2">
           <div class="card"><div class="row between" style="margin-bottom:6px"><h3>أرباح الأسبوع</h3><span class="small muted">بالألف دينار</span></div>
             <svg class="chart" id="chart" viewBox="0 0 420 220" width="100%" role="img" aria-label="أرباح الأسبوع"></svg></div>
-          <div class="card"><h3>رحلات اليوم</h3><ul class="list" id="dTripList"></ul></div>
+          <div class="card stack"><h3>تفاصيل اليوم</h3><div class="breakdown" id="ceBreak"></div></div>
+        </div>
+        <div class="grid-2">
+          <div class="wallet">
+            <span class="small">رصيدك عند هلا (جاهز للتحويل)</span>
+            <span class="bal"><span class="num" id="ceBal"></span> <span style="font-size:1rem">د.ع</span></span>
+            <span class="small">الكاش اللي بيدك من رحلات اليوم: <b class="num" id="ceCash"></b> د.ع</span>
+            <div class="row"><button class="btn" id="cePayZain" type="button">حوّل إلى زين كاش</button><button class="btn" id="cePayBank" type="button">حوّل للحساب البنكي</button></div>
+          </div>
+          <div class="card"><h3>التحويلات السابقة</h3><ul class="list" id="cePayouts"></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CAPTAIN APP: TRIPS ================= -->
+    <section data-view="cap-trips" hidden>
+      <div class="view-head"><div><h2>رحلاتي ككابتن</h2><p class="muted small">رحلات اليوم وتقييمك للزبائن.</p></div></div>
+      <div class="card"><ul class="list" id="ctList"></ul></div>
+    </section>
+
+    <!-- ================= CAPTAIN APP: ME ================= -->
+    <section data-view="cap-me" hidden>
+      <div class="view-head"><div><h2>حساب الكابتن</h2></div></div>
+      <div class="stack">
+        <div class="card profile-head">
+          <span class="cap-photo" data-cap-photo style="width:68px;height:68px"></span>
+          <div style="flex:1;min-width:0"><h3 data-cap-name></h3><p class="muted small">★ <b class="num" data-cap-rating></b> · <span class="num" data-cap-trips></span> رحلة · نسبة القبول <span class="num" data-cap-accept></span></p></div>
+          <a class="btn" href="#captain">ملفي كما يشوفه الزبون</a>
+        </div>
+        <div class="grid-2">
+          <div class="card stack">
+            <h3>السيارة</h3>
+            <div class="specs">
+              <div><span>الموديل</span><b data-cap-car></b></div>
+              <div><span>سنة الصنع</span><b class="num" data-cap-year></b></div>
+              <div><span>اللون</span><b data-cap-color></b></div>
+              <div><span>اللوحة</span><b>البصرة <span class="num" data-cap-plate-no></span></b></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>الإعدادات</h3>
+            <div class="set-row"><span>تطبيق الملاحة</span><div class="seg" id="cNavPref"><button type="button" data-v="google" aria-pressed="true">Google</button><button type="button" data-v="waze" aria-pressed="false">Waze</button></div></div>
+            <div class="set-row"><span>استقبال رحلات الدفع النقدي</span><label class="switch"><input type="checkbox" id="cCashOk" checked><span class="track"></span></label></div>
+            <div class="set-row"><span>صوت تنبيه الطلبات</span><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="set-row"><span>دعم الكباتن (24 ساعة)</span><b class="ltr num">+964 780 000 4253</b></div>
+          </div>
         </div>
         <div class="card">
           <h3>المستمسكات</h3>
@@ -579,6 +730,7 @@ th{font-size:.75rem;color:var(--muted);font-weight:600}
             <li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span><span class="grow">فحص السيارة الدوري<br><span class="small muted">مطلوب قبل 30/11/2026</span></span><span class="chip chip-bad">مطلوب</span></li>
           </ul>
         </div>
+        <a class="btn" href="#ride">الرجوع لتطبيق الزبون</a>
       </div>
     </section>
   </main>
@@ -661,16 +813,21 @@ const discountFor=f=>S.promo?Math.min(3000,Math.round(f*0.1/250)*250):0;
 function today(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
 
 /* ================= views ================= */
-const VIEWS=['ride','trips','wallet','account','captain','driver'];
-const NAVOF={captain:null,driver:'account'};
-let lastView='ride';
+const VIEWS=['ride','trips','wallet','account','captain','cap-home','cap-earn','cap-trips','cap-me'];
+const NAVOF={captain:null};
+let lastView='ride', role='rider';
 function route(){
   const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'ride';
   $$('[data-view]').forEach(s=>s.hidden=s.dataset.view!==v);
+  if(v!=='captain') role=v.startsWith('cap-')?'captain':'rider';
+  $('#riderNav').hidden=role!=='rider'; $('#capNav').hidden=role!=='captain';
+  $('#roleRider').setAttribute('aria-current',role==='rider'); $('#roleCap').setAttribute('aria-current',role==='captain');
+  $('#topAvatar').href=role==='captain'?'#cap-me':'#account';
   const nav=v in NAVOF?NAVOF[v]:v;
   $$('.nav a').forEach(a=>a.dataset.nav===nav?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current'));
   if(v==='ride') setTimeout(()=>map.invalidateSize(),50);
-  if(v==='driver') scheduleRequest();
+  if(v==='cap-home') setTimeout(()=>{initCapMap();cmap.invalidateSize();},50);
+  if(v==='cap-earn') renderCapEarn();
   if(v!=='captain') lastView=v;
   window.scrollTo(0,0);
 }
@@ -932,35 +1089,155 @@ $('#riderForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#
 $('#btnInvite').addEventListener('click',async()=>{try{await navigator.clipboard.writeText('HALA-MUSTAFA');toast('تم نسخ كود الدعوة');}catch(e){toast('كود الدعوة: HALA-MUSTAFA');}});
 $('#btnSupport').addEventListener('click',()=>toast('خدمة الزبائن: +964 780 000 4252 (24 ساعة)'));
 
-/* ================= captain mode ================= */
+/* ================= captain app ================= */
+const COMM=0.15;
+const RIDERS=[{n:'علي حسين',r:4.8,ph:'+964 770 412 8890'},{n:'زينب كاظم',r:4.9,ph:'+964 780 233 1047'},{n:'حسن جاسم',r:4.7,ph:'+964 771 600 5521'},{n:'نور عبد الله',r:5.0,ph:'+964 772 918 3302'},{n:'مرتضى سالم',r:4.6,ph:'+964 750 341 7719'}];
+const ZONES=[{n:'العشار',m:1.3},{n:'ساحة سعد',m:1.2},{n:'الجزائر',m:1.2}];
+const C={online:false,step:'offline',gross:52000,tips:3000,bonus:0,trips:7,mins:330,goal:12,goalBonus:10000,cash:28000,balance:18500,
+  week:[42,55,38,61,70,84,0],
+  list:[{t:'7:10 م',r:'المعقل ← الجبيلة',f:6500,p:'نقداً',who:'حسن',rt:5},{t:'5:45 م',r:'التنومة ← العشار',f:7000,p:'محفظة هلا',who:'زينب',rt:5},{t:'4:20 م',r:'الجزائر ← الحيانية',f:7500,p:'نقداً',who:'مرتضى',rt:4}],
+  payouts:[{d:'05/11',a:120000,to:'زين كاش'},{d:'29/10',a:145000,to:'مصرف الرافدين'}],
+  nav:'google'};
+const netOf=g=>Math.round(g*(1-COMM));
+let cmap=null,capMarker=null,capPos=L.latLng(30.5105,47.8250),cJob=null,cLine=null,cPinA=null,cPinB=null,cTimers=[],cTick=null,cWaitT=null,cStarsV=5,onlineSince=null;
+function initCapMap(){
+  if(cmap) return;
+  cmap=L.map('capMap',{maxBounds:L.latLngBounds([30.15,47.35],[30.85,48.25]),minZoom:10,maxZoom:19}).setView(capPos,14);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(cmap);
+  ZONES.forEach(z=>{const p=placeBy(z.n);L.circle(p.c,{radius:450,color:'#E46A12',weight:1,fillColor:'#E46A12',fillOpacity:.14}).addTo(cmap)
+    .bindTooltip(`طلب عالي ×${z.m}`,{permanent:true,direction:'center',className:'zone-lbl'});});
+  capMarker=L.marker(capPos,{icon:taxiIcon(true),zIndexOffset:1000,interactive:false}).addTo(cmap);
+}
+async function getRoute(a,b){
+  try{const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`);
+    const j=await r.json();if(j.code!=='Ok')throw 0;const rt=j.routes[0];
+    return {coords:rt.geometry.coordinates.map(c=>L.latLng(c[1],c[0])),km:rt.distance/1000,min:Math.max(2,Math.round(rt.duration/60*1.25))};
+  }catch(e){const km=a.distanceTo(b)/1000*1.3;return {coords:[a,b],km,min:Math.max(2,Math.round(km/28*60))};}
+}
+let cRaf=null;
+function capAlong(coords,dur,onP,done){
+  const segs=[];let total=0;for(let i=1;i<coords.length;i++){const d=coords[i-1].distanceTo(coords[i]);segs.push(d);total+=d;}
+  const t0=performance.now();
+  (function f(now){const t=Math.min(1,(now-t0)/dur);let tg=total*t,i=0;while(i<segs.length-1&&tg>segs[i]){tg-=segs[i];i++;}
+    const a=coords[i],b=coords[i+1]||a,r=segs[i]?tg/segs[i]:0;capPos=L.latLng(a.lat+(b.lat-a.lat)*r,a.lng+(b.lng-a.lng)*r);capMarker.setLatLng(capPos);onP(t);
+    if(t<1)cRaf=requestAnimationFrame(f);else{cRaf=null;done();}})(t0);
+}
+const STATUS={offline:'غير متصل',idle:'متصل · بانتظار طلب',request:'طلب جديد!',pickup:'بالطريق للزبون',waiting:'بانتظار الزبون',trip:'برحلة',collect:'إنهاء الرحلة'};
+function setCStep(st){C.step=st;$$('[data-cstep]').forEach(el=>el.hidden=el.dataset.cstep!==st);
+  const ch=$('#cStatus');ch.textContent=STATUS[st];ch.classList.toggle('on',st!=='offline');$('#cOnline').checked=st!=='offline';$('#cDrawer').hidden=true;}
+function clearC(){cTimers.forEach(clearTimeout);cTimers=[];clearInterval(cTick);clearInterval(cWaitT);if(cRaf)cancelAnimationFrame(cRaf);cRaf=null;}
+function clearJobMap(){[cLine,cPinA,cPinB].forEach(l=>l&&cmap.removeLayer(l));cLine=cPinA=cPinB=null;$('#navExt').hidden=true;}
+function goOnline(){initCapMap();C.online=true;onlineSince=onlineSince||Date.now();setCStep('idle');scheduleCReq();toast('بدأ دوامك، الله وياك');}
+function goOffline(){if(['pickup','waiting','trip','collect'].includes(C.step)){toast('كمّل الرحلة الحالية أول');$('#cOnline').checked=true;return;}
+  clearC();C.online=false;if(cmap)clearJobMap();cJob=null;setCStep('offline');toast('انتهى الدوام');}
+$('#cGo').addEventListener('click',goOnline);
+$('#cOnline').addEventListener('change',e=>e.target.checked?goOnline():goOffline());
+function scheduleCReq(){cTimers.push(setTimeout(()=>{if(C.step!=='idle')return;if(location.hash!=='#cap-home'){scheduleCReq();return;}showCReq();},reduce?600:3500));}
+function riderRow(j){return `<span class="rider-av">${esc(j.rider.n[0])}</span><span class="grow" style="flex:1;min-width:0"><b>${esc(j.rider.n)}</b> <span class="stars-row small">★</span> <b class="small num">${j.rider.r.toFixed(1)}</b><br><span class="small muted">${esc(j.pay)}</span></span>`;}
+function showCReq(){
+  const cashOk=$('#cCashOk').checked;
+  let a=PLACES[Math.floor(Math.random()*9)],b;do{b=PLACES[Math.floor(Math.random()*11)];}while(b===a);
+  const zone=ZONES.find(z=>z.n===a.n),mult=zone?zone.m:1;
+  const km=L.latLng(a.c).distanceTo(L.latLng(b.c))/1000*1.3,f=Math.round(fare(km,1)*mult/250)*250;
+  const pays=cashOk?['نقداً','نقداً','محفظة هلا','بطاقة']:['محفظة هلا','بطاقة'];
+  cJob={rider:RIDERS[Math.floor(Math.random()*RIDERS.length)],a,b,km,fare:f,mult,pay:pays[Math.floor(Math.random()*pays.length)],pickKm:capPos.distanceTo(L.latLng(a.c))/1000};
+  cPinA=L.marker(a.c,{icon:pinIcon('a')}).addTo(cmap);cPinB=L.marker(b.c,{icon:pinIcon('b')}).addTo(cmap);
+  cmap.fitBounds(L.latLngBounds([capPos,L.latLng(a.c),L.latLng(b.c)]),{padding:[50,50],maxZoom:15});
+  let left=15;
+  $('#cReq').innerHTML=`<div class="req-card" role="alert">
+    <div class="row between"><div><span class="small muted">طلب رحلة${mult>1?` · <b style="color:var(--accent)">طلب عالي ×${mult}</b>`:''}</span><div class="req-fare"><span class="num">${fmt(f)}</span> <span style="font-size:1rem">د.ع</span></div><span class="small">صافي لك: <b class="num">${fmt(netOf(f))}</b> د.ع</span></div><div class="ring" id="cRing"><b class="num" id="cLeft">15</b></div></div>
+    <div class="rider-row">${riderRow(cJob)}</div>
+    <div class="points" style="background:var(--surface)"><span class="dot-a"></span><span class="val">${esc(a.n)} <span class="small muted">· يبعد <span class="num">${cJob.pickKm.toFixed(1)}</span> كم</span></span><span></span><span class="dot-b"></span><span class="val">${esc(b.n)} <span class="small muted">· <span class="num">${km.toFixed(1)}</span> كم</span></span><span></span></div>
+    <div class="grid-2"><button class="btn" id="cNo" type="button">رفض</button><button class="btn btn-primary" id="cYes" type="button">قبول</button></div></div>`;
+  setCStep('request');
+  cTick=setInterval(()=>{left--;const el=$('#cLeft');if(el){el.textContent=left;$('#cRing').style.setProperty('--p',left/15*100);}if(left<=0)declineC(true);},1000);
+  $('#cNo').addEventListener('click',()=>declineC(false));$('#cYes').addEventListener('click',acceptC);
+}
+function declineC(expired){clearInterval(cTick);clearJobMap();cJob=null;setCStep('idle');toast(expired?'انتهى وقت الطلب':'رفضت الطلب');scheduleCReq();}
+function navLink(ll){return C.nav==='waze'?`https://waze.com/ul?ll=${ll.lat},${ll.lng}&navigate=yes`:`https://www.google.com/maps/dir/?api=1&destination=${ll.lat},${ll.lng}`;}
+async function acceptC(){
+  clearInterval(cTick);setCStep('pickup');
+  $('#cRider1').innerHTML=riderRow(cJob);$('#cPickName').textContent=cJob.a.n;$('#cArrived').disabled=true;$('#cPickBar').style.width='0';
+  const A=L.latLng(cJob.a.c);const rt=await getRoute(capPos,A);if(C.step!=='pickup')return;
+  cLine=L.polyline(rt.coords,{color:'#12343B',weight:5,dashArray:'6 8'}).addTo(cmap);cmap.fitBounds(cLine.getBounds(),{padding:[50,50],maxZoom:16});
+  const ne=$('#navExt');ne.href=navLink(A);ne.textContent=`افتح الطريق بـ ${C.nav==='waze'?'Waze':'خرائط Google'} ↗`;ne.hidden=false;
+  const eta=Math.max(1,rt.min);
+  capAlong(rt.coords,reduce?800:6000,t=>{$('#cPickBar').style.width=t*100+'%';$('#cPickEta').textContent=Math.max(1,Math.ceil(eta*(1-t)))+' د';},()=>{
+    $('#cArrived').disabled=false;$('#cPickEta').textContent='وصلت';toast('وصلت لموقع الزبون');});
+}
+$('#cArrived').addEventListener('click',()=>{
+  setCStep('waiting');$('#cRider2').innerHTML=riderRow(cJob);toast('أخبرنا '+cJob.rider.n.split(' ')[0]+' إنك وصلت');
+  let sec=0;$('#cWait').textContent='0:00';cWaitT=setInterval(()=>{sec++;$('#cWait').textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');},1000);
+  cJob.waitStart=Date.now();
+});
+$('#cNoShow').addEventListener('click',()=>{clearC();clearJobMap();C.gross+=2000;C.balance+=netOf(2000);cJob=null;setCStep('idle');renderCap();toast('انلغت الرحلة وانحسبت لك رسوم انتظار 2,000 د.ع');scheduleCReq();});
+$('#cCancel').addEventListener('click',()=>{clearC();clearJobMap();cJob=null;setCStep('idle');toast('ألغيت الرحلة. الإلغاء المتكرر يقلل نسبة القبول');scheduleCReq();});
+$('#cStart').addEventListener('click',async()=>{
+  clearInterval(cWaitT);const waitedMin=(Date.now()-cJob.waitStart)/60000;cJob.waitFee=waitedMin>3?Math.round((waitedMin-3))*250:0;
+  setCStep('trip');if(cLine)cmap.removeLayer(cLine);if(cPinA){cmap.removeLayer(cPinA);cPinA=null;}
+  $('#cDropName').textContent=cJob.b.n;$('#cTripRider').textContent=cJob.rider.n;$('#cTripPay').textContent=cJob.pay;$('#cTripFare').textContent=fmt(cJob.fare)+' د.ع';$('#cEnd').disabled=true;$('#cTripBar').style.width='0';
+  const B=L.latLng(cJob.b.c);const rt=await getRoute(capPos,B);if(C.step!=='trip')return;
+  cLine=L.polyline(rt.coords,{color:'#E46A12',weight:6}).addTo(cmap);cmap.fitBounds(cLine.getBounds(),{padding:[50,50],maxZoom:16});
+  const ne=$('#navExt');ne.href=navLink(B);ne.hidden=false;
+  capAlong(rt.coords,reduce?1000:12000,t=>{$('#cTripBar').style.width=t*100+'%';$('#cTripEta').textContent=Math.max(1,Math.ceil(rt.min*(1-t)))+' د';},()=>{$('#cEnd').disabled=false;$('#cTripEta').textContent='وصلت';toast('وصلت للوجهة');});
+});
+$('#cEnd').addEventListener('click',()=>{
+  clearJobMap();const j=cJob;j.tip=Math.random()<.4?1000:0;const total=j.fare+(j.waitFee||0);
+  const comm=Math.round(total*COMM/250)*250,net=total-comm+j.tip;
+  $('#cCollectBox').innerHTML=(j.pay==='نقداً'?`<div class="req-card" style="text-align:center"><span>استلم من الزبون نقداً</span><div class="req-fare"><span class="num">${fmt(total)}</span> <span style="font-size:1rem">د.ع</span></div></div>`:`<div class="card" style="text-align:center;background:var(--ok-soft);border-color:transparent"><b style="color:var(--ok)">انخصم المبلغ من ${esc(j.pay)} الزبون</b><br><span class="small">لا تستلم كاش</span></div>`)+
+    `<div class="breakdown"><span>الأجرة</span><span class="num">${fmt(j.fare)}</span>${j.waitFee?`<span>رسوم الانتظار</span><span class="num">${fmt(j.waitFee)}</span>`:''}<span>عمولة هلا (15%)</span><span class="num neg ltr">−${fmt(comm)}</span>${j.tip?`<span>إكرامية من الزبون</span><span class="num ltr" style="color:var(--ok)">+${fmt(j.tip)}</span>`:''}<span class="tot">صافي ربحك</span><span class="tot num">${fmt(net)} د.ع</span></div>`;
+  j.total=total;j.comm=comm;j.net=net;cStarsV=5;renderCStars();
+  $('#cDone').textContent=j.pay==='نقداً'?'استلمت المبلغ، كمّل':'تم، كمّل';setCStep('collect');
+});
+function renderCStars(){const s=$('#cStars');s.innerHTML='';for(let i=1;i<=5;i++){const b=document.createElement('button');b.type='button';b.className=i<=cStarsV?'on':'';b.setAttribute('aria-label',i+' نجوم');
+  b.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';b.addEventListener('click',()=>{cStarsV=i;renderCStars();});s.appendChild(b);}}
+$('#cDone').addEventListener('click',()=>{
+  const j=cJob,d=new Date();
+  C.gross+=j.total;C.tips+=j.tip;C.trips++;CAPTAIN.trips++;
+  if(j.pay==='نقداً'){C.cash+=j.total;C.balance-=j.comm;C.balance+=j.tip;}else C.balance+=j.net;
+  let bonusMsg='';if(C.trips===C.goal){C.bonus+=C.goalBonus;C.balance+=C.goalBonus;bonusMsg=' · حققت هدف اليوم وانضافت مكافأة '+fmt(C.goalBonus)+' د.ع!';}
+  C.list.unshift({t:(d.getHours()%12||12)+':'+String(d.getMinutes()).padStart(2,'0')+(d.getHours()<12?' ص':' م'),r:`${j.a.n} ← ${j.b.n}`,f:j.total,p:j.pay,who:j.rider.n.split(' ')[0],rt:cStarsV});
+  cJob=null;setCStep('idle');renderCap();fillCaptain();toast('انضاف '+fmt(j.net)+' د.ع لأرباحك'+bonusMsg);scheduleCReq();
+});
+document.addEventListener('click',async e=>{
+  const a=e.target.closest('[data-cact]');if(!a||!cJob)return;const dr=$('#cDrawer');const same=!dr.hidden&&dr.dataset.act===a.dataset.cact;dr.hidden=same;dr.dataset.act=a.dataset.cact;if(same)return;
+  if(a.dataset.cact==='call')dr.innerHTML=`<span>رقم الزبون ${esc(cJob.rider.n)}:</span><b class="ltr num" style="user-select:all">${cJob.rider.ph}</b><div class="row"><button type="button" data-copy="${cJob.rider.ph}">نسخ الرقم</button></div>`;
+  if(a.dataset.cact==='msg')dr.innerHTML=`<span>رسالة سريعة للزبون:</span><div class="row">${['بالطريق إليك','الزحمة شوية، دقايق وأوصل','وصلت، آني كدام الباب','ما لكيت المكان، تكدر تتصل؟'].map(m=>`<button type="button" data-msg="${m}">${m}</button>`).join('')}</div>`;
+  if(a.dataset.cact==='sos')dr.innerHTML=`<b style="color:var(--bad)">أرقام الطوارئ بالعراق</b><span>الشرطة: <b class="num">104</b> · الإسعاف: <b class="num">122</b> · الدفاع المدني: <b class="num">115</b></span><span class="small muted">دعم الكباتن: <b class="ltr num">+964 780 000 4253</b></span>`;
+});
+$('#capFit').addEventListener('click',()=>{if(cmap)cmap.flyTo(capPos,15,{duration:reduce?0:.6});});
+$$('#cNavPref button').forEach(b=>b.addEventListener('click',()=>{C.nav=b.dataset.v;$$('#cNavPref button').forEach(x=>x.setAttribute('aria-pressed',x===b));toast('تطبيق الملاحة صار '+b.textContent);}));
 const DAYS=['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
-function renderChart(){const c=$('#chart'),W=420,H=220,L0=34,R=8,T=16,B=30,max=100,bw=(W-L0-R)/7;const wk=S.week.slice();wk[6]=Math.round(S.driver.earn/1000);let h='';
+function renderChart(){const c=$('#chart'),W=420,H=220,L0=34,R=8,T=16,B=30,max=100,bw=(W-L0-R)/7;const wk=C.week.slice();wk[6]=Math.round(todayNet()/1000);let h='';
   [0,25,50,75,100].forEach(v=>{const y=T+(H-T-B)*(1-v/max);h+=`<line class="grid" x1="${L0}" x2="${W-R}" y1="${y}" y2="${y}"/><text x="${L0-6}" y="${y+4}" text-anchor="end">${v}</text>`;});
   wk.forEach((v,i)=>{const x=W-R-(i+1)*bw+bw*.18,w=bw*.64,bh=(H-T-B)*Math.min(v,max)/max,y=H-B-bh;h+=`<rect class="bar ${i===6?'today':''}" x="${x}" y="${y}" width="${w}" height="${bh}" rx="4"/><text class="val" x="${x+w/2}" y="${y-4}" text-anchor="middle">${v}</text><text x="${x+w/2}" y="${H-10}" text-anchor="middle">${i===6?'اليوم':DAYS[i]}</text>`;});
   c.innerHTML=h;}
-function renderDriver(){$('#dEarn').textContent=fmt(S.driver.earn);$('#dTrips').textContent=S.driver.trips;
-  $('#dTripList').innerHTML=S.driver.list.slice(0,5).map(t=>`<li><span class="icon-dot num small">${t.t.split(' ')[0]}</span><span class="grow"><b>${esc(t.r)}</b><br><span class="small muted">${t.t} · مدفوعة</span></span><b class="num amt-in">+${fmt(t.f)}</b></li>`).join('');
-  $('#onlineLbl').textContent=S.driver.online?'متصل · تستقبل طلبات':'غير متصل';renderChart();}
-let reqT=null,reqTick=null,pending=null;
-function scheduleRequest(){if(!S.driver.online||pending||reqT)return;reqT=setTimeout(()=>{reqT=null;if(location.hash!=='#driver'||!S.driver.online)return;showRequest();},reduce?500:3000);}
-function showRequest(){let a=PLACES[Math.floor(Math.random()*10)],b;do{b=PLACES[Math.floor(Math.random()*10)];}while(b===a);
-  const km=L.latLng(a.c).distanceTo(L.latLng(b.c))/1000*1.3,f=fare(km,1);pending={from:a.n,to:b.n,f};let left=15;
-  $('#reqWrap').innerHTML=`<div class="request" role="alert"><div class="row between"><h3>طلب رحلة جديد</h3><span class="timer num" id="reqLeft">15</span></div>
-    <div class="points" style="background:var(--surface)"><span class="dot-a"></span><span class="val">${esc(a.n)} <span class="small muted">· يبعد 1.2 كم</span></span><span></span><span class="dot-b"></span><span class="val">${esc(b.n)}</span><span></span></div>
-    <div class="row small"><span class="chip chip-accent"><span class="num">${km.toFixed(1)}</span> كم</span><span class="chip chip-ok">ربحك <span class="num">${fmt(f*0.85)}</span> د.ع</span><span class="muted">الزبون: علي ★ 4.8 · نقداً</span></div>
-    <div class="grid-2"><button class="btn" id="reqNo" type="button">رفض</button><button class="btn btn-primary" id="reqYes" type="button">قبول الرحلة</button></div></div>`;
-  reqTick=setInterval(()=>{left--;const el=$('#reqLeft');if(el)el.textContent=left;if(left<=0)closeRequest(false,true);},1000);
-  $('#reqNo').addEventListener('click',()=>closeRequest(false));$('#reqYes').addEventListener('click',()=>closeRequest(true));}
-function closeRequest(ok,expired){clearInterval(reqTick);$('#reqWrap').innerHTML='';
-  if(ok&&pending){const g=Math.round(pending.f*0.85/250)*250;S.driver.earn+=g;S.driver.trips++;const d=new Date();
-    S.driver.list.unshift({t:(d.getHours()%12||12)+':'+String(d.getMinutes()).padStart(2,'0')+(d.getHours()<12?' ص':' م'),r:`${pending.from} ← ${pending.to}`,f:g});renderDriver();toast('قبلت الرحلة، وانضاف '+fmt(g)+' د.ع لأرباحك');}
-  else toast(expired?'انتهى وقت الطلب':'تم رفض الطلب');pending=null;setTimeout(scheduleRequest,4000);}
-$('#online').addEventListener('change',e=>{S.driver.online=e.target.checked;if(!S.driver.online){clearTimeout(reqT);reqT=null;if(pending){clearInterval(reqTick);$('#reqWrap').innerHTML='';pending=null;}}renderDriver();scheduleRequest();toast(S.driver.online?'أنت متصل هسه':'أنت غير متصل');});
+const todayComm=()=>Math.round(C.gross*COMM/250)*250;
+const todayNet=()=>C.gross-todayComm()+C.tips+C.bonus;
+function renderCap(){
+  $('#cmEarn').textContent=fmt(todayNet());$('#cmTrips').textContent=C.trips;
+  const mins=C.mins+(onlineSince?Math.floor((Date.now()-onlineSince)/60000):0);$('#cmHours').textContent=(mins/60).toFixed(1);
+  $('#cGoalTxt').textContent=`${Math.min(C.trips,C.goal)} / ${C.goal}`;$('#cGoalBonus').textContent=fmt(C.goalBonus);$('#cGoalBar').style.width=Math.min(100,C.trips/C.goal*100)+'%';
+  $('#ctList').innerHTML=C.list.map(t=>`<li><span class="rider-av">${esc(t.who[0])}</span><span class="grow"><b>${esc(t.r)}</b><br><span class="small muted">${t.t} · ${esc(t.who)} · ${esc(t.p)} · قيّمته <span class="stars-row">${'★'.repeat(t.rt)}</span></span></span><b class="num amt-in ltr">+${fmt(netOf(t.f))}</b></li>`).join('');
+  renderCapEarn();
+}
+function renderCapEarn(){
+  $('#ceToday').textContent=fmt(todayNet());$('#ceWeek').textContent=fmt(C.week.slice(0,6).reduce((a,b)=>a+b,0)*1000+todayNet());
+  $('#ceTrips').textContent=C.trips;$('#ceAvg').textContent=fmt(C.trips?C.gross/C.trips:0);
+  $('#ceBreak').innerHTML=`<span>مجموع الأجور</span><span class="num">${fmt(C.gross)}</span><span>الإكراميات</span><span class="num">${fmt(C.tips)}</span><span>المكافآت</span><span class="num">${fmt(C.bonus)}</span><span>عمولة هلا (15%)</span><span class="num neg ltr">−${fmt(todayComm())}</span><span class="tot">صافي اليوم</span><span class="tot num">${fmt(todayNet())} د.ع</span>`;
+  $('#ceBal').textContent=fmt(Math.max(0,C.balance));$('#ceCash').textContent=fmt(C.cash);
+  $('#cePayouts').innerHTML=C.payouts.map(p=>`<li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7 7 7-7"/></svg></span><span class="grow"><b>${esc(p.to)}</b><br><span class="small muted num">${p.d}</span></span><b class="num">${fmt(p.a)}</b></li>`).join('');
+  renderChart();
+}
+function payout(to){if(C.balance<=0){toast('ما عندك رصيد للتحويل هسه');return;}C.payouts.unshift({d:today(),a:C.balance,to});toast('تم تحويل '+fmt(C.balance)+' د.ع إلى '+to);C.balance=0;renderCapEarn();}
+$('#cePayZain').addEventListener('click',()=>payout('زين كاش'));
+$('#cePayBank').addEventListener('click',()=>payout('مصرف الرافدين'));
+setInterval(()=>{if(onlineSince)renderCap();},60000);
 
 /* ================= boot ================= */
-function renderAll(){renderWallet();renderMethods();renderTx();renderRidePay();renderRider();renderDriver();renderHistory();renderChips();renderTrip();fillCaptain();}
-const probe=new Image();probe.onload=()=>{hasPhoto=true;fillCaptain();renderHistory();if(myCar)myCar.setIcon(taxiIcon(true));};probe.src=CAPTAIN.photo;
-renderAll();setStep('plan');
+function renderAll(){renderWallet();renderMethods();renderTx();renderRidePay();renderRider();renderCap();renderHistory();renderChips();renderTrip();fillCaptain();}
+const probe=new Image();probe.onload=()=>{hasPhoto=true;fillCaptain();renderHistory();if(myCar)myCar.setIcon(taxiIcon(true));if(capMarker)capMarker.setIcon(taxiIcon(true));};probe.src=CAPTAIN.photo;
+renderAll();setStep('plan');setCStep('offline');
 setPoint('a',L.latLng(PLACES[0].c),'البيت · العشار',true);
 setPoint('b',L.latLng(PLACES[5].c),'الجزائر');
 setMode('b');
