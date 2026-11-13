@@ -988,7 +988,7 @@ let CAPTAIN=CAPS.taxi;
 /* feminine wording when the captain is a woman */
 const gx=t=>!CAPTAIN.female?t:t.replace(/الكابتن وصل!/g,'الكابتنة وصلت!').replace(/رايح ياخذ/g,'رايحة تاخذ').replace(/الكابتن /g,'الكابتنة ').replace(/جايلك/g,'جايتلك').replace(/جايلچ/g,'جايتلچ').replace(/جايك/g,'جايتك').replace(/ويوصل/g,'وتوصل').replace(/عليه\./g,'عليها.').replace(/الكابتن وصل!/g,'الكابتنة وصلت!').replace(/رايح ياخذ/g,'رايحة تاخذ');
 function photoHTML(cap=CAPTAIN){return cap.hasPhoto?`<img src="${cap.photo}" alt="صورة ${esc(cap.name)}">`:esc(cap.first[0]);}
-const capTitle=(cap,pre)=>(pre?'<span class="hk">هلا كابتن</span> ':'')+esc(cap.name);
+const capTitle=(cap,pre)=>(pre?'<span class="hk">'+(cap.female?'الكابتنة':'الكابتن')+'</span> ':'')+esc(cap.name);
 const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
 function fillCaptain(){
   $$('[data-cap-title]').forEach(el=>{el.innerHTML=capTitle(el.closest('[data-app-cap]')?CAPS.taxi:CAPTAIN,el.hasAttribute('data-cap-prefix'));});
@@ -1512,7 +1512,7 @@ $('#cGo').addEventListener('click',goOnline);
 $('#cOnline').addEventListener('change',e=>e.target.checked?goOnline():goOffline());
 function scheduleCReq(){cTimers.push(setTimeout(()=>{if(C.step!=='idle')return;if(location.hash!=='#cap-home'){scheduleCReq();return;}showCReq();},reduce?600:3500));}
 const firstName=n=>{const p=String(n).trim().split(/\s+/);return p[0]+(p[1]?' '+p[1][0]+'.':'');};
-function riderRow(j,pre){return `<span class="rider-av">${esc(j.rider.n[0])}</span><span class="grow" style="flex:1;min-width:0"><b>${pre?'<span class="hk">هلا زبون</span> ':''}${esc(firstName(j.rider.n))}</b> <span class="stars-row small">★</span> <b class="small num">${j.rider.r.toFixed(1)}</b><br><span class="small muted">${esc(j.pay)}</span></span>`;}
+function riderRow(j,pre){return `<span class="rider-av">${esc(j.rider.n[0])}</span><span class="grow" style="flex:1;min-width:0"><b>${esc(firstName(j.rider.n))}</b> <span class="stars-row small">★</span> <b class="small num">${j.rider.r.toFixed(1)}</b><br><span class="small muted">${esc(j.pay)}</span></span>`;}
 function showCReq(){
   const cashOk=$('#cCashOk').checked;
   const homeOn=$('#cHome').checked,home=placeBy($('#cHomeSel').value);
