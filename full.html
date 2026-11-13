@@ -1,0 +1,1833 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>هلا كابتن</title>
+<meta name="theme-color" content="#F5C21B">
+<link rel="icon" type="image/png" href="assets/logo-64.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;700&display=swap">
+<style>
+/* Layout: app shell — brand bar on top, side tabs on wide screens / bottom tabs on phones.
+   Ride view = live Basra map + one step-by-step panel (map on top, panel below on phones). */
+:root{
+  --bg:#ECF0F1; --surface:#FFFFFF; --surface-2:#F5F7F8; --ink:#13242B; --muted:#5B6C73; --line:#D5DDE0;
+  --accent:#F5C21B; --accent-ink:#141414; --accent-soft:#FFF3C4; --accent-strong:#8A6200; --navy:#12343B; --on-navy:#FFFFFF;
+  --ok:#1A8F62; --ok-soft:#D9F1E6; --warn:#B57D00; --warn-soft:#FBEFCF; --bad:#C93C2F; --bad-soft:#F9DEDA; --star:#E8A500;
+  --shadow:0 1px 2px rgba(19,36,43,.06),0 8px 24px rgba(19,36,43,.08);
+  --f-display:'Reem Kufi','IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+  --f-body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,Arial,sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1518; --surface:#152126; --surface-2:#1B2A30; --ink:#E6EEF0; --muted:#91A2A8; --line:#263840;
+  --accent:#F5C21B; --accent-ink:#141414; --accent-soft:#3A3010; --accent-strong:#F5C21B; --navy:#1F4E58; --on-navy:#FFFFFF;
+  --ok:#3CC48C; --ok-soft:#173A2C; --warn:#E3B13C; --warn-soft:#3A3016; --bad:#F06A5C; --bad-soft:#3E1D1A; --star:#F2C14E;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1518; --surface:#152126; --surface-2:#1B2A30; --ink:#E6EEF0; --muted:#91A2A8; --line:#263840;
+  --accent:#F5C21B; --accent-ink:#141414; --accent-soft:#3A3010; --accent-strong:#F5C21B; --navy:#1F4E58; --on-navy:#FFFFFF;
+  --ok:#3CC48C; --ok-soft:#173A2C; --warn:#E3B13C; --warn-soft:#3A3016; --bad:#F06A5C; --bad-soft:#3E1D1A; --star:#F2C14E;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:1100;background:var(--surface)}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;line-height:1.25;margin:0;text-wrap:balance}
+h2{font-size:1.4rem} h3{font-size:1.05rem}
+p{margin:0}
+button,input,select{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.ltr{direction:ltr;unicode-bidi:isolate}
+.muted{color:var(--muted)} .small{font-size:.85rem}
+
+/* top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:1000;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand-logo{width:42px;height:42px;border-radius:10px;display:block;flex:none}
+.brand-mark{width:38px;height:38px;border-radius:10px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink)}
+.brand-name{font-family:var(--f-display);font-size:1.4rem;font-weight:700}
+.brand-tag{font-size:.75rem;color:var(--muted);display:block;margin-top:-4px}
+.demo-badge{margin-inline-start:auto;font-size:.72rem;padding:3px 10px;border-radius:99px;background:var(--warn-soft);color:var(--warn);font-weight:600;white-space:nowrap}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--navy);color:var(--on-navy);display:grid;place-items:center;font-weight:700;font-size:.9rem;flex:none;text-decoration:none}
+
+/* shell */
+.shell{display:grid;grid-template-columns:190px minmax(0,1fr);gap:20px;max-width:1300px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+.nav{display:flex;flex-direction:column;gap:4px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 78px);align-self:start}
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--muted);text-decoration:none;font-weight:600}
+.nav a:hover{background:var(--surface);color:var(--ink)}
+.nav a[aria-current="page"]{background:var(--surface);color:var(--accent-strong);box-shadow:var(--shadow)}
+.nav svg{width:21px;height:21px;flex:none}
+main{min-width:0}
+.view-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:8px 16px;margin-bottom:14px}
+
+/* generic */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.between{justify-content:space-between}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.btn{border-radius:11px;padding:11px 16px;font-weight:700;cursor:pointer;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{filter:brightness(.97)} .btn:active{transform:scale(.98)}
+.btn-primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn-block{width:100%}
+.btn-ghost{background:transparent}
+.btn-danger{color:var(--bad)}
+.btn svg{width:18px;height:18px}
+label.field{display:flex;flex-direction:column;gap:5px;font-size:.85rem;font-weight:600;color:var(--muted)}
+.input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-size:.95rem;color:var(--ink)}
+.input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.input.ltr{direction:ltr;text-align:right}
+.err{color:var(--bad);font-size:.8rem;min-height:1.1em;font-weight:500}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:.78rem;font-weight:600;white-space:nowrap}
+.chip-ok{background:var(--ok-soft);color:var(--ok)} .chip-warn{background:var(--warn-soft);color:var(--warn)} .chip-bad{background:var(--bad-soft);color:var(--bad)} .chip-accent{background:var(--accent-soft);color:var(--accent-strong)}
+.list{list-style:none;margin:0;padding:0}
+.list > li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.list > li:last-child{border-bottom:0}
+.list .grow{flex:1;min-width:0}
+.icon-dot{width:36px;height:36px;border-radius:10px;background:var(--surface-2);display:grid;place-items:center;flex:none;color:var(--muted)}
+.icon-dot svg{width:18px;height:18px}
+.stars-row{color:var(--star);letter-spacing:1px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat .v{font-family:var(--f-display);font-size:1.45rem;line-height:1.2}
+.stat .k{font-size:.8rem;color:var(--muted)}
+
+/* captain photo */
+.cap-photo{width:56px;height:56px;border-radius:50%;flex:none;overflow:hidden;background:var(--navy);color:var(--on-navy);display:grid;place-items:center;font-family:var(--f-display);font-size:1.25rem;position:relative}
+.cap-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.cap-photo.lg{width:116px;height:116px;font-size:2.4rem;border:4px solid var(--surface);box-shadow:var(--shadow);overflow:visible}
+.cap-photo.lg img{border-radius:50%}
+.cap-photo.sm{width:36px;height:36px;font-size:.85rem}
+.verified{position:absolute;bottom:2px;left:2px;width:28px;height:28px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;border:3px solid var(--surface)}
+.verified svg{width:14px;height:14px}
+
+/* ride view */
+.ride{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;align-items:start}
+.map-wrap{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--surface-2);height:min(calc(100vh - 150px),720px);min-height:420px}
+#map{position:absolute;inset:0}
+.leaflet-container{font-family:var(--f-body);background:var(--surface-2)}
+.map-tools{position:absolute;z-index:500;left:12px;bottom:34px;display:flex;flex-direction:column;gap:8px}
+.fab{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.fab svg{width:20px;height:20px}
+.layer-sw{position:absolute;z-index:500;right:12px;top:12px;display:flex;background:var(--surface);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow);padding:3px;gap:2px}
+.layer-sw button{border:0;background:transparent;padding:5px 11px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.82rem;color:var(--muted)}
+.layer-sw button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-strong)}
+.map-hint{position:absolute;z-index:500;bottom:12px;right:12px;background:var(--surface);border:1px solid var(--line);padding:5px 12px;border-radius:99px;font-size:.8rem;box-shadow:var(--shadow);max-width:calc(100% - 90px)}
+.tile-warn{border:0;cursor:pointer;font:inherit;position:absolute;z-index:500;top:56px;right:12px;left:12px;margin:auto;width:fit-content;max-width:calc(100% - 24px);background:var(--warn-soft);color:var(--warn);padding:6px 12px;border-radius:10px;font-size:.8rem;font-weight:600;text-align:center}
+
+.panel{position:sticky;top:calc(env(safe-area-inset-top,0px) + 78px)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--surface-2);padding:4px;border-radius:12px}
+.modes button{border:0;background:transparent;padding:8px;border-radius:9px;cursor:pointer;font-weight:700;display:flex;gap:6px;align-items:center;justify-content:center;color:var(--muted)}
+.modes button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.dot-a,.dot-b{width:11px;height:11px;border-radius:50%;display:inline-block;flex:none}
+.dot-a{background:var(--navy)} .dot-b{background:var(--accent);border-radius:3px}
+.points{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:8px 10px;align-items:center;font-size:.93rem;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.points .val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.points .val.empty{color:var(--muted);font-weight:400}
+.x{border:0;background:transparent;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:6px}
+.search{position:relative}
+.search input{padding-right:38px}
+.search svg{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted);pointer-events:none}
+.results{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:11px;overflow:hidden;max-height:240px;overflow-y:auto}
+.results button{width:100%;text-align:right;border:0;background:var(--surface);padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line);display:block}
+.results li:last-child button{border-bottom:0}
+.results button:hover{background:var(--surface-2)}
+.results small{display:block;color:var(--muted);font-size:.76rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 11px;cursor:pointer;font-size:.83rem;font-weight:600}
+.chips button:hover{border-color:var(--accent);color:var(--accent-strong)}
+.chips button.saved{background:var(--surface-2)}
+.chips button.on{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;text-align:center}
+.summary div{background:var(--surface-2);border-radius:10px;padding:8px 4px}
+.summary b{display:block;font-size:1.1rem}
+.summary span{font-size:.75rem;color:var(--muted)}
+.options{display:flex;flex-direction:column;gap:8px}
+.opt{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 12px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;background:var(--surface)}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.opt-ico{width:40px;height:28px}
+.opt b{display:block}
+.price{font-weight:700;text-align:left}
+.pay-pick{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px}
+.pay-pick select{border:0;background:transparent;font-weight:700;max-width:65%}
+.promo{display:flex;gap:8px}
+.promo .input{flex:1;min-width:0}
+.note{font-size:.78rem;color:var(--muted)}
+
+.cap-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;text-align:right;width:100%}
+.cap-card:hover{border-color:var(--accent)}
+.cap-card .go{color:var(--accent-strong);font-size:.8rem;font-weight:700}
+.plate{display:inline-flex;flex-direction:column;align-items:center;border:2px solid var(--ink);border-radius:6px;padding:0 8px;font-weight:700;line-height:1.25;background:var(--surface);color:var(--ink)}
+.plate small{font-size:.6rem;border-bottom:1px solid var(--ink);width:100%;text-align:center}
+.plate.lg{font-size:1.3rem;padding:2px 16px}
+.plate.lg small{font-size:.75rem}
+.actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.actions button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);cursor:pointer;font-size:.76rem;font-weight:600}
+.actions button svg{width:20px;height:20px}
+.actions .sos{color:var(--bad)}
+.drawer{border:1px dashed var(--line);border-radius:11px;padding:10px 12px;font-size:.88rem;display:flex;flex-direction:column;gap:8px}
+.drawer .row button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:4px 10px;cursor:pointer;font-size:.8rem}
+.progress{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.progress > i{display:block;height:100%;width:0;background:var(--accent);border-radius:inherit}
+.spinner{width:56px;height:56px;border-radius:50%;border:5px solid var(--accent-soft);border-top-color:var(--accent);animation:spin 1s linear infinite;margin:6px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.stars{display:flex;gap:6px;justify-content:center;direction:ltr}
+.stars button{background:none;border:0;cursor:pointer;padding:2px;color:var(--line)}
+.stars button.on{color:var(--star)}
+.stars svg{width:34px;height:34px}
+.tips{display:flex;gap:8px;flex-wrap:wrap}
+.tips button{flex:1;min-width:64px;padding:8px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600}
+.tips button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-strong)}
+.receipt{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:.92rem}
+.receipt .total{font-weight:700;font-size:1.08rem;border-top:1px dashed var(--line);padding-top:8px}
+
+/* map markers */
+.pin{width:30px;height:40px;position:relative}
+.pin::before{content:"";position:absolute;left:3px;top:0;width:24px;height:24px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.pin::after{content:attr(data-l);position:absolute;left:0;top:4px;width:30px;text-align:center;color:#fff;font-weight:700;font-size:10px;font-family:var(--f-body)}
+.pin-a{--c:#12343B} .pin-b{--c:#141414}
+.taxi{width:30px;height:30px;border-radius:50%;background:#F5C21B;border:2.5px solid #141414;box-shadow:0 2px 6px rgba(0,0,0,.35);display:grid;place-items:center;color:#141414;overflow:hidden}
+.taxi svg{width:16px;height:16px}
+.taxi.mine{width:44px;height:44px;background:#12343B;color:#fff;border-color:#F5C21B;border-width:3px;font-weight:700;font-family:var(--f-display);font-size:1.1rem}
+.taxi img{width:100%;height:100%;object-fit:cover}
+.me{width:18px;height:18px;border-radius:50%;background:#2A7DE1;border:3px solid #fff;box-shadow:0 0 0 6px rgba(42,125,225,.25)}
+
+/* captain profile */
+.cap-hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center}
+.cap-hero h2{font-size:1.6rem}
+.big-rating{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:1.05rem}
+.bars{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:grid;grid-template-columns:34px minmax(0,1fr) 40px;gap:8px;align-items:center;font-size:.85rem}
+.bar-row .track{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar-row .track i{display:block;height:100%;background:var(--star);border-radius:inherit}
+.compl{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.compl div{border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;background:var(--surface-2)}
+.compl b{display:block;font-family:var(--f-display);font-size:1.2rem}
+.compl svg{width:26px;height:26px;color:var(--accent-strong)}
+.specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px}
+.specs div{display:flex;flex-direction:column}
+.specs span{font-size:.78rem;color:var(--muted)}
+.review{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.review:last-child{border-bottom:0}
+.review .who{width:36px;height:36px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-weight:700;flex:none}
+
+/* wallet */
+.pay-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.wallet{background:var(--navy);color:var(--on-navy);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;gap:14px}
+.wallet .bal{font-family:var(--f-display);font-size:2.1rem;line-height:1.1}
+.wallet .btn{background:rgba(255,255,255,.14);color:inherit;border-color:rgba(255,255,255,.3)}
+.method{display:flex;align-items:center;gap:12px;padding:12px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer}
+.method:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.method input{accent-color:var(--accent);width:18px;height:18px}
+.method .grow{flex:1;min-width:0}
+.cc{aspect-ratio:1.586;max-width:100%;width:330px;border-radius:16px;padding:18px;color:#fff;background:linear-gradient(135deg,#1B4650,#0E2328 60%,#3A2414);display:flex;flex-direction:column;justify-content:space-between;direction:ltr;box-shadow:var(--shadow)}
+.cc-num{font-size:1.2rem;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.cc-row{display:flex;justify-content:space-between;align-items:end;font-size:.78rem;gap:10px}
+.cc-row b{display:block;font-size:.92rem;text-transform:uppercase;letter-spacing:.05em}
+.cc-chip{width:38px;height:28px;border-radius:5px;background:linear-gradient(135deg,#E8C27A,#B08A3E)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:right;padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.75rem;color:var(--muted);font-weight:600}
+.amt-in{color:var(--ok);font-weight:700} .amt-out{font-weight:700}
+
+/* account */
+.profile-head{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.profile-head .avatar{width:68px;height:68px;font-size:1.4rem;font-family:var(--f-display)}
+.link-row{display:flex;align-items:center;gap:12px;padding:12px 0;border:0;border-bottom:1px solid var(--line);text-decoration:none;cursor:pointer;background:none;width:100%;text-align:right}
+.link-row:last-child{border-bottom:0}
+.link-row .grow{flex:1;min-width:0}
+.link-row::after{content:"‹";color:var(--muted);font-size:1.3rem}
+
+/* driver */
+.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-weight:700}
+.switch input{position:absolute;opacity:0}
+.switch .track{width:52px;height:30px;border-radius:99px;background:var(--line);position:relative;transition:background .2s}
+.switch .track::after{content:"";position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch input:checked + .track{background:var(--ok)}
+.switch input:checked + .track::after{transform:translateX(-22px)}
+.switch input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+.request{border:2px solid var(--accent);background:var(--accent-soft);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.request .timer{font-family:var(--f-display);font-size:1.3rem;color:var(--accent-strong)}
+.chart text{fill:var(--muted);font-size:12px;font-family:var(--f-body)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .bar{fill:var(--accent);opacity:.35}
+.chart .bar.today{opacity:1}
+.chart .val{fill:var(--ink);font-weight:700;font-size:11px}
+
+.tchat{display:flex;flex-direction:column;gap:8px;border:1.5px solid var(--accent);border-radius:14px;padding:10px;background:var(--surface)}
+.tchat-head{display:flex;flex-direction:column;gap:2px}
+.tchat-head .lock{font-size:.75rem;color:var(--ok);font-weight:600}
+.tchat-body{display:flex;flex-direction:column;gap:6px;max-height:230px;min-height:90px;overflow-y:auto;padding:8px;background:var(--surface-2);border-radius:10px}
+.tchat-body .msg{max-width:85%;font-size:.9rem;padding:7px 11px}
+.tchat .chips button{font-size:.78rem;padding:4px 9px}
+.unread{position:relative}
+.unread::after{content:"";position:absolute;top:6px;left:10px;width:10px;height:10px;border-radius:50%;background:var(--bad);border:2px solid var(--surface)}
+.promo-banner{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:12px;background:var(--navy);color:var(--on-navy);text-decoration:none;font-size:.88rem}
+.promo-banner b{color:var(--accent)}
+.link-btn{border:0;background:none;color:var(--accent-strong);font-weight:700;cursor:pointer;padding:2px 0;text-align:right;font:inherit;font-size:.88rem}
+.dot-s{width:11px;height:11px;border-radius:50%;background:var(--muted);display:inline-block;flex:none}
+.pin-s{--c:#5B6C73}
+.pin-box{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:10px 12px;border-radius:12px;border:2px dashed var(--navy);background:var(--surface)}
+.pin-box b{font-family:var(--f-display);font-size:1.6rem;letter-spacing:.25em;color:var(--ink)}
+.peak{background:var(--warn-soft);color:var(--warn);padding:8px 10px;border-radius:10px;font-weight:600}
+.board li .rank{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--surface-2);flex:none}
+.board li.me-row{background:var(--accent-soft);border-radius:10px;padding-inline:8px}
+.pts{font-family:var(--f-display);font-size:2rem;line-height:1.1}
+.greet{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;background:var(--accent-soft);border:1px solid var(--accent);animation:pop .35s ease-out}
+.greet img{width:36px;height:36px;border-radius:9px;flex:none}
+.greet b{font-size:.8rem;color:var(--accent-strong)}
+.greet p{font-size:.95rem;font-weight:600}
+@keyframes pop{from{transform:translateY(6px);opacity:.3}to{transform:none;opacity:1}}
+.help-btn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line);color:var(--ink);text-decoration:none;flex:none}
+.help-btn svg{width:20px;height:20px}
+.chat{display:flex;flex-direction:column;gap:12px;max-width:760px}
+.chat-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.chat-head .grow{flex:1;min-width:0}
+.bot-av{width:46px;height:46px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-size:1.3rem;flex:none;position:relative}
+.bot-av::after{content:"";position:absolute;bottom:1px;left:1px;width:11px;height:11px;border-radius:50%;background:var(--ok);border:2px solid var(--surface)}
+.chat-body{display:flex;flex-direction:column;gap:8px;height:min(52vh,460px);overflow-y:auto;padding:12px;background:var(--surface-2);border-radius:12px;border:1px solid var(--line)}
+.msg{max-width:82%;padding:9px 13px;border-radius:16px;font-size:.95rem;line-height:1.55;white-space:pre-line;animation:pop .25s ease-out}
+.msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-start-start-radius:4px}
+.msg.mine{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-start-end-radius:4px}
+.msg.human{align-self:flex-start;background:var(--ok-soft);border:1px solid var(--ok);border-start-start-radius:4px}
+.msg .who{display:block;font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:2px}
+.msg.sys{align-self:center;background:transparent;color:var(--muted);font-size:.8rem;padding:2px}
+.msg.urgent{border-color:var(--bad);background:var(--bad-soft)}
+.typing{align-self:flex-start;color:var(--muted);font-size:.82rem;padding:2px 6px}
+.chat-input{display:flex;gap:8px}
+.chat-input .input{flex:1;min-width:0}
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:99px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:2000;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* services + cargo form */
+.svc{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.svc button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;font-weight:700;color:var(--ink)}
+.svc button svg{width:38px;height:26px}
+.svc button small{font-weight:500;color:var(--muted);font-size:.72rem;text-align:center}
+.svc button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-strong)}
+.items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 8px;border:1px solid var(--line);border-radius:10px;font-size:.85rem;min-width:0}
+.item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item.on{border-color:var(--accent);background:var(--accent-soft)}
+.stepper{display:inline-flex;align-items:center;gap:6px;flex:none}
+.stepper button{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;line-height:1;color:var(--ink)}
+.stepper b{min-width:16px;text-align:center}
+.check{display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer}
+.check input{accent-color:var(--accent);width:17px;height:17px}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap}
+.thumbs img{width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.opt.disabled{opacity:.45;cursor:not-allowed}
+textarea.input{resize:vertical;font:inherit}
+.hk{color:var(--accent-strong);font-weight:700}
+.label{font-size:.8rem;font-weight:700;color:var(--muted)}
+.taxi.truck{background:#12343B;color:#fff;border-color:#fff}
+
+/* role switch + captain app */
+.role-sw{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:3px;gap:2px}
+.role-sw a{padding:5px 14px;border-radius:99px;text-decoration:none;font-weight:700;font-size:.85rem;color:var(--muted)}
+.role-sw a[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.status-chip{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.85rem}
+.status-chip::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.status-chip.on::before{background:var(--ok);box-shadow:0 0 0 4px var(--ok-soft)}
+.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.mini div{background:var(--surface-2);border-radius:10px;padding:8px 4px}
+.mini b{display:block;font-family:var(--f-display);font-size:1.1rem}
+.mini span{font-size:.72rem;color:var(--muted)}
+.goal{display:flex;flex-direction:column;gap:6px;font-size:.85rem}
+.big-btn{padding:16px;font-size:1.1rem;border-radius:14px}
+.btn-ok{background:var(--ok);color:#fff;border-color:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none;transform:none}
+.ring{--p:100;width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--surface) 0);display:grid;place-items:center;flex:none}
+.ring b{width:50px;height:50px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-family:var(--f-display);font-size:1.3rem;color:var(--accent-strong)}
+.req-card{border:2px solid var(--accent);background:var(--accent-soft);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px}
+.req-fare{font-family:var(--f-display);font-size:1.8rem;line-height:1.1}
+.rider-row{display:flex;align-items:center;gap:10px}
+.rider-av{width:44px;height:44px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-weight:700;flex:none;border:1px solid var(--line)}
+.nav-ext{position:absolute;z-index:500;top:12px;right:12px;background:var(--navy);color:var(--on-navy);padding:7px 14px;border-radius:99px;font-weight:700;font-size:.85rem;text-decoration:none;box-shadow:var(--shadow)}
+.zone-lbl{background:var(--surface);color:var(--accent-strong);border:1px solid var(--accent);border-radius:99px;padding:1px 8px;font-weight:700;font-size:11px;white-space:nowrap;font-family:var(--f-body);box-shadow:none}
+.zone-lbl::before{display:none}
+.timer-big{font-family:var(--f-display);font-size:2rem;text-align:center}
+.breakdown{display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:.92rem}
+.breakdown .neg{color:var(--bad)}
+.breakdown .tot{font-weight:700;border-top:1px dashed var(--line);padding-top:8px;font-size:1.05rem}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.set-row:last-child{border-bottom:0}
+.seg{display:flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:5px 10px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.82rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+@media (max-width: 1100px){ .ride{grid-template-columns:minmax(0,1fr) 350px} .stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width: 900px){
+  .shell{grid-template-columns:minmax(0,1fr);padding-bottom:calc(90px + env(safe-area-inset-bottom,0px));padding-top:12px}
+  .nav{position:fixed;top:auto;bottom:0;left:0;right:0;z-index:1000;flex-direction:row;justify-content:space-around;gap:0;background:var(--surface);border-top:1px solid var(--line);
+    padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+  .nav a{flex-direction:column;gap:2px;font-size:.72rem;padding:6px 4px;flex:1;text-align:center}
+  .nav a[aria-current="page"]{box-shadow:none;background:transparent}
+  .ride,.pay-layout,.grid-2{grid-template-columns:minmax(0,1fr)}
+  .map-wrap{height:46vh;min-height:300px}
+  .panel{position:static}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .ride-head{display:none}
+}
+@media (max-width: 520px){
+  .brand-tag{display:none} .demo-badge{display:none} .brand-name{font-size:1.2rem}
+  .stat .v{font-size:1.2rem}
+  .cap-hero{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
+  .cap-hero .row,.cap-hero .big-rating{justify-content:center}
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#ride" aria-label="هلا">
+    <img class="brand-logo" src="assets/logo-96.png" alt="" width="42" height="42">
+    <span><span class="brand-name">هلا</span><span class="brand-tag" id="brandTag">هلا كابتن · تكسي ونقل داخل البصرة</span></span>
+  </a>
+  <span class="demo-badge">نسخة تجريبية</span>
+  <a class="help-btn" id="topHelp" href="#support" title="الدعم السريع" aria-label="الدعم السريع"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/><path d="M9.5 10a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 16.5v.2"/></svg></a>
+  <a class="avatar" id="topAvatar" href="#account" title="حسابي">م ح</a>
+</header>
+
+<div class="shell">
+  <nav class="nav" id="riderNav" aria-label="الأقسام">
+    <a href="#ride" data-nav="ride"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>اطلب رحلة</a>
+    <a href="#trips" data-nav="trips"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>رحلاتي</a>
+    <a href="#wallet" data-nav="wallet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg>المحفظة</a>
+    <a href="#account" data-nav="account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>حسابي</a>
+  </nav>
+  <nav class="nav" id="capNav" aria-label="أقسام الكابتن" hidden>
+    <a href="#cap-home" data-nav="cap-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 14v7M10 12H3.5M14 12h6.5"/></svg>الدوام</a>
+    <a href="#cap-earn" data-nav="cap-earn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>الأرباح</a>
+    <a href="#cap-trips" data-nav="cap-trips"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>رحلاتي</a>
+    <a href="#cap-me" data-nav="cap-me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>حسابي</a>
+  </nav>
+
+  <main>
+    <!-- ================= RIDE ================= -->
+    <section data-view="ride">
+      <div class="view-head ride-head"><div><h2>وين رايح اليوم؟</h2><p class="muted small">حدد مكانك ووجهتك على خريطة البصرة، واختار نوع الرحلة.</p></div></div>
+      <div class="ride">
+        <div class="map-wrap">
+          <div id="map" dir="ltr" aria-label="خريطة البصرة"></div>
+          <div class="layer-sw" role="group" aria-label="نوع الخريطة">
+            <button type="button" data-layer="streets" aria-pressed="true">شوارع</button>
+            <button type="button" data-layer="clean" aria-pressed="false">واضحة</button>
+            <button type="button" data-layer="sat" aria-pressed="false">قمر صناعي</button>
+          </div>
+          <div class="map-tools">
+            <button class="fab" id="fabLocate" type="button" title="موقعي" aria-label="موقعي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+            <button class="fab" id="fabFit" type="button" title="عرض الرحلة كاملة" aria-label="عرض الرحلة كاملة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+          </div>
+          <button type="button" class="tile-warn" id="tileWarn" hidden>صور الخريطة ما دا تتحمّل. تأكد من الإنترنت واضغط هنا حتى نعيد المحاولة</button>
+          <span class="map-hint" id="mapHint">اضغط على الخريطة لتحديد الوجهة</span>
+        </div>
+
+        <div class="card stack panel" id="panel">
+          <!-- step: plan -->
+          <div class="stack" data-step="plan">
+            <div class="svc" role="group" aria-label="نوع الخدمة">
+              <button type="button" data-svc="taxi" aria-pressed="true"><svg viewBox="0 0 44 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 22h34v-7l-5-8H11l-6 8z"/><path d="M22 7v8"/><circle cx="12" cy="23" r="3.2" fill="currentColor"/><circle cx="32" cy="23" r="3.2" fill="currentColor"/></svg>تكسي<small>توصيل أشخاص</small></button>
+              <button type="button" data-svc="cargo" aria-pressed="false"><svg viewBox="0 0 44 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h24v16H3z"/><path d="M27 12h8l6 6v4H27z"/><circle cx="11" cy="23" r="3.2" fill="currentColor"/><circle cx="33" cy="23" r="3.2" fill="currentColor"/></svg>نقل وتوصيل<small>أثاث، أجهزة، مواد بناء</small></button>
+            </div>
+            <a class="promo-banner" href="#line"><span>جديد: <b>هلا خط</b> · اشتراك شهري للدوام والمدارس</span><span>‹</span></a>
+            <div class="modes" role="group" aria-label="شنو تحدد على الخريطة">
+              <button type="button" id="modeA" aria-pressed="false"><span class="dot-a"></span><span id="modeALbl">من وين</span></button>
+              <button type="button" id="modeB" aria-pressed="true"><span class="dot-b"></span><span id="modeBLbl">إلى وين</span></button>
+            </div>
+            <div class="points">
+              <span class="dot-a"></span><span class="val" id="valA"></span><button class="x" id="clrA" type="button" aria-label="مسح نقطة الانطلاق">✕</button>
+              <span class="dot-s" id="dotS" hidden></span><span class="val" id="valS" hidden></span><button class="x" id="clrS" type="button" aria-label="مسح الوقفة" hidden>✕</button>
+              <span class="dot-b"></span><span class="val" id="valB"></span><button class="x" id="clrB" type="button" aria-label="مسح الوجهة">✕</button>
+            </div>
+            <button type="button" class="link-btn" id="addStop">+ إضافة وقفة بالطريق (1,000 د.ع)</button>
+            <div class="search">
+              <input class="input" id="q" type="search" placeholder="ابحث عن مكان بالبصرة…" autocomplete="off" aria-label="بحث عن مكان">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+            </div>
+            <ul class="results" id="results" hidden></ul>
+            <div class="chips" id="chips"></div>
+
+            <div id="tripBox" class="stack" hidden>
+              <p class="peak small" id="peak" hidden></p>
+              <div class="summary"><div><b class="num" id="sKm">–</b><span>كيلومتر</span></div><div><b class="num" id="sMin">–</b><span>دقيقة تقريباً</span></div></div>
+              <div class="options" id="rideOptions" role="radiogroup" aria-label="نوع الرحلة"></div>
+              <label class="check" id="ladyRow"><input type="checkbox" id="ladyPref"> أفضّل كابتنة (للنساء والعوائل)</label>
+              <div id="cargoBox" class="stack" hidden>
+                <div><span class="label">شنو تريد تنقل؟</span><div class="items" id="cItems"></div></div>
+                <div class="stack" style="gap:6px"><span class="label">نوع السيارة</span><div class="options" id="vehOpts" role="radiogroup" aria-label="نوع السيارة"></div></div>
+                <div class="grid-2" style="gap:10px">
+                  <label class="field">طابق الاستلام<select class="input" id="flA"></select></label>
+                  <label class="field">طابق التسليم<select class="input" id="flB"></select></label>
+                </div>
+                <label class="check"><input type="checkbox" id="lift"> أكو مصعد بالمكانين</label>
+                <div class="row between"><span>عمال للتحميل والتنزيل<br><span class="small muted">5,000 د.ع لكل عامل</span></span><div class="stepper"><button type="button" id="hMinus" aria-label="أقل">−</button><b class="num" id="helpers">0</b><button type="button" id="hPlus" aria-label="أكثر">+</button></div></div>
+                <label class="check"><input type="checkbox" id="wrap"> تغليف وحماية للأجهزة (+5,000 د.ع)</label>
+                <label class="field">صور الأغراض (اختياري)<input type="file" accept="image/*" multiple id="cPhotos" class="input"></label>
+                <div class="thumbs" id="thumbs"></div>
+                <label class="field">ملاحظات للكابتن<textarea class="input" id="cNotes" rows="2" placeholder="مثلاً: الثلاجة كبيرة والدرج ضيق"></textarea></label>
+                <div class="breakdown small" id="cBreak"></div>
+              </div>
+              <div class="stack" style="gap:6px"><span class="label">الموعد</span><div class="seg" id="when"><button type="button" data-v="now" aria-pressed="true">هسه</button><button type="button" data-v="later" aria-pressed="false">موعد لاحق</button></div><input type="datetime-local" class="input" id="whenAt" hidden aria-label="الموعد"></div>
+              <label class="check"><input type="checkbox" id="forOther"> الطلب لشخص ثاني (أهلي، صديق)</label>
+              <div class="grid-2" id="otherBox" hidden style="gap:10px">
+                <label class="field">اسمه<input class="input" id="oName" placeholder="مثلاً: أمي"></label>
+                <label class="field">رقم موبايله<input class="input ltr num" id="oPhone" inputmode="tel" placeholder="+964 7xx xxx xxxx"></label>
+              </div>
+              <div class="pay-pick"><span class="muted small">الدفع</span><select id="ridePay" aria-label="طريقة الدفع"></select></div>
+              <div class="promo"><input class="input" id="promo" placeholder="كود خصم (جرّب HALA10)" autocomplete="off" aria-label="كود خصم"><button class="btn" id="btnPromo" type="button">تطبيق</button></div>
+              <p class="note" id="promoNote" hidden></p>
+              <button class="btn btn-primary btn-block" id="btnRequest" type="button"><span id="btnLabel">اطلب هلا</span> · <span class="num" id="btnPrice"></span> د.ع</button>
+            </div>
+            <p class="note" id="routeNote"></p>
+          </div>
+
+          <!-- step: booked (scheduled cargo) -->
+          <div class="stack" data-step="booked" hidden style="text-align:center">
+            <span class="chip chip-ok" style="align-self:center">تم الحجز</span>
+            <h3 id="bookedTitle"></h3>
+            <p class="muted small" id="bookedSub"></p>
+            <button class="btn btn-primary btn-block" id="btnBooked" type="button">تمام</button>
+          </div>
+
+          <!-- step: search -->
+          <div class="stack" data-step="search" hidden style="text-align:center">
+            <div class="spinner" aria-hidden="true"></div>
+            <h3 id="searchTitle">ندوّر على أقرب كابتن…</h3>
+            <p class="muted small">عادةً تاخذ أقل من دقيقة</p>
+            <button class="btn btn-ghost btn-danger" id="btnCancel" type="button">إلغاء الطلب</button>
+          </div>
+
+          <!-- step: live trip -->
+          <div class="stack" data-step="live" hidden>
+            <div class="row between"><h3 id="liveTitle">الكابتن جايلك بالطريق</h3><span class="chip chip-accent num" id="liveEta"></span></div>
+            <div class="progress"><i id="liveBar"></i></div>
+            <div class="greet" id="greet" hidden role="status"><img src="assets/logo-64.png" alt=""><div><b>رسالة من هلا</b><p id="greetTxt"></p></div></div>
+            <button class="cap-card" type="button" data-open-captain>
+              <span class="cap-photo" data-cap-photo></span>
+              <span style="min-width:0"><b data-cap-title data-cap-prefix></b> <span class="stars-row small">★</span> <b class="small num" data-cap-rating></b><br><span class="small muted"><span data-cap-car></span> · <span data-cap-color></span></span><br><span class="go">عرض ملف الكابتن ‹</span></span>
+              <span class="plate"><small>البصرة</small><span class="num" data-cap-plate-no></span></span>
+            </button>
+            <div class="actions">
+              <button type="button" data-act="call"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>اتصال</button>
+              <button type="button" data-act="msg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></svg>رسالة</button>
+              <button type="button" data-act="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>شارك الرحلة</button>
+              <button type="button" data-act="sos" class="sos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16v.5"/></svg>طوارئ</button>
+            </div>
+            <div class="pin-box" id="pinBox"><span class="small muted">رمز الأمان</span><b class="num ltr" id="pinCode"></b><span class="small" id="pinNote">كوله للكابتن حتى يبدي الرحلة. إذا ما طلبه منك، لا تصعد.</span></div>
+            <p class="small" id="liveOther" hidden></p>
+            <p class="small" id="liveCargo" hidden></p>
+            <div class="drawer" id="drawer" hidden></div>
+            <div class="tchat" id="rChat" hidden>
+              <div class="tchat-head"><b id="rChatTitle">دردشة</b><span class="lock">محادثة خاصة بهالرحلة · تنحذف من تخلص الرحلة · أرقام الهواتف تنخفي</span></div>
+              <div class="tchat-body" id="rChatBody" aria-live="polite"></div>
+              <div class="chips" id="rChatQuick"></div>
+              <form class="chat-input" id="rChatForm" autocomplete="off"><input class="input" id="rChatIn" placeholder="اكتب رسالة للكابتن…" aria-label="رسالة للكابتن"><button class="btn btn-primary" type="submit">إرسال</button></form>
+            </div>
+            <div class="receipt small">
+              <span class="muted">من</span><span id="tFrom"></span>
+              <span class="muted">إلى</span><span id="tTo"></span>
+              <span class="muted">الأجرة</span><b id="tFare"></b>
+            </div>
+            <button class="btn btn-ghost btn-danger" id="btnCancel2" type="button">إلغاء الرحلة</button>
+          </div>
+
+          <!-- step: done -->
+          <div class="stack" data-step="done" hidden>
+            <div style="text-align:center" class="stack">
+              <span class="cap-photo lg" data-cap-photo style="margin:0 auto"></span>
+              <div><span class="chip chip-ok">وصلت بالسلامة</span><h3 style="margin-top:6px">شلون كانت رحلتك ويه <span data-cap-first></span>؟</h3></div>
+            </div>
+            <div class="stars" id="stars" role="radiogroup" aria-label="التقييم"></div>
+            <div class="chips" id="praise" style="justify-content:center"></div>
+            <div><p class="small muted" style="margin-bottom:6px">شلون كان التبريد؟</p><div class="seg" id="acRate"><button type="button" data-v="cold" aria-pressed="true">بارد</button><button type="button" data-v="ok" aria-pressed="false">عادي</button><button type="button" data-v="hot" aria-pressed="false">ما كان يبرد</button></div></div>
+            <div><p class="small muted" style="margin-bottom:6px">إكرامية للكابتن (اختياري)</p><div class="tips" id="tips"></div></div>
+            <div class="row between"><span>قسّم الأجرة ويه أصدقائك</span><div class="stepper"><button type="button" id="spMinus" aria-label="أقل">−</button><b class="num" id="splitN">1</b><button type="button" id="spPlus" aria-label="أكثر">+</button></div></div>
+            <p class="note" id="splitNote" hidden></p>
+            <div class="receipt card" style="padding:14px">
+              <span class="muted">الخدمة</span><span id="rSvc"></span>
+              <span class="muted">الأجرة</span><span id="rFare"></span>
+              <span class="muted">الخصم</span><span id="rDisc"></span>
+              <span class="muted">الإكرامية</span><span id="rTip"></span>
+              <span class="muted">طريقة الدفع</span><span id="rPay"></span>
+              <span class="total">المجموع</span><span class="total" id="rTotal"></span>
+            </div>
+            <p class="note" id="ptsNote" style="text-align:center"></p>
+            <p class="note" style="text-align:center">انتهت الدردشة ويه الكابتن وانحذفت.</p>
+            <p class="err" id="rErr" style="text-align:center"></p>
+            <button class="btn btn-primary btn-block" id="btnFinish" type="button">تأكيد وإنهاء</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CAPTAIN PROFILE ================= -->
+    <section data-view="captain" hidden>
+      <div class="view-head"><button class="btn btn-ghost" type="button" id="capBack">→ رجوع</button></div>
+      <div class="stack">
+        <div class="card cap-hero">
+          <span class="cap-photo lg" data-cap-photo></span>
+          <div class="stack" style="gap:8px">
+            <div class="row" style="gap:6px"><span class="chip chip-ok">كابتن موثّق</span><span class="chip chip-accent" id="topBadge" hidden>كابتن مميز لهذا الشهر</span></div>
+            <h2 data-cap-title></h2>
+            <div class="big-rating"><span class="stars-row">★★★★★</span><b class="num" data-cap-rating></b><span class="muted small">(<span class="num" data-cap-ratings></span> تقييم)</span></div>
+            <p class="muted small">يشتغل ويه هلا من <span data-cap-since></span> · يتكلم <span data-cap-langs></span> · يغطي <span data-cap-areas></span></p>
+            <div class="row" style="margin-top:4px">
+              <button class="btn" type="button" data-act="call"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>اتصال</button>
+              <button class="btn btn-primary" type="button" id="capBook">اطلب رحلة</button>
+              <button class="btn" type="button" id="favBtn">أضف للمفضلين ♡</button>
+            </div>
+            <div class="drawer" id="capDrawer" hidden></div>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="v num" data-cap-rating></div><div class="k">التقييم من 5</div></div>
+          <div class="stat"><div class="v num" data-cap-trips></div><div class="k">رحلة مكتملة</div></div>
+          <div class="stat"><div class="v num" data-cap-years></div><div class="k">سنوات خبرة</div></div>
+          <div class="stat"><div class="v num" data-cap-accept></div><div class="k">نسبة قبول الطلبات</div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card stack">
+            <h3>السيارة</h3>
+            <div class="row" style="gap:16px">
+              <svg viewBox="0 0 120 60" width="120" height="60" aria-hidden="true"><path d="M10 42h100v-12l-12-14H34L18 30H10z" fill="#FFFFFF" stroke="#12343B" stroke-width="2"/><path d="M34 16h64l12 14H22z" fill="#F2B705" opacity=".9"/><rect x="50" y="8" width="20" height="8" rx="2" fill="#F2B705" stroke="#12343B" stroke-width="1.5"/><circle cx="32" cy="44" r="8" fill="#12343B"/><circle cx="88" cy="44" r="8" fill="#12343B"/></svg>
+              <span class="plate lg"><small>البصرة · أجرة</small><span class="num" data-cap-plate-no></span></span>
+            </div>
+            <div class="specs">
+              <div><span>الموديل</span><b data-cap-car></b></div>
+              <div><span>سنة الصنع</span><b class="num" data-cap-year></b></div>
+              <div><span>اللون</span><b data-cap-color></b></div>
+              <div><span>السعة</span><b data-cap-seats></b></div>
+              <div><span>التبريد</span><b><span class="num" data-cap-ac></span>% قالوا بارد</b></div>
+            </div>
+            <div class="chips" id="capFeatures"></div>
+          </div>
+          <div class="card stack">
+            <h3>التقييمات</h3>
+            <div class="bars" id="capBars"></div>
+            <p class="small muted">نسبة إلغاء الكابتن للرحلات: <b class="num" data-cap-cancel></b></p>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <h3>شنو يكولون الزبائن عنه</h3>
+          <div class="compl" id="capCompl"></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card"><h3>آخر التعليقات</h3><div id="capReviews"></div></div>
+          <div class="card"><h3>التحقق والأمان</h3><ul class="list" id="capChecks"></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= HALA LINE (monthly) ================= -->
+    <section data-view="line" hidden>
+      <div class="view-head"><div><h2>هلا خط</h2><p class="muted small">اشتراك شهري: نفس الكابتن ياخذك للدوام أو ياخذ الجهال للمدرسة ويرجعهم، بسعر أرخص من الرحلات العادية.</p></div></div>
+      <div class="grid-2">
+        <form class="card stack" id="lineForm" novalidate>
+          <h3>اشتراك جديد</h3>
+          <div class="seg" id="lineType"><button type="button" data-v="work" aria-pressed="true">دوام</button><button type="button" data-v="school" aria-pressed="false">مدرسة</button></div>
+          <div class="grid-2" style="gap:10px"><label class="field">من<select class="input" id="lnFrom"></select></label><label class="field">إلى<select class="input" id="lnTo"></select></label></div>
+          <div class="stack" style="gap:6px"><span class="label">الأيام</span><div class="chips" id="lnDays"></div></div>
+          <div class="grid-2" style="gap:10px"><label class="field">وقت الذهاب<input type="time" class="input" id="lnGo" value="07:30"></label><label class="field">وقت الرجعة<input type="time" class="input" id="lnBack" value="14:00"></label></div>
+          <div class="row between"><span id="lnPaxLbl">عدد الركاب</span><div class="stepper"><button type="button" id="lnMinus" aria-label="أقل">−</button><b class="num" id="lnPax">1</b><button type="button" id="lnPlus" aria-label="أكثر">+</button></div></div>
+          <label class="check"><input type="checkbox" id="lnLady"> أفضّل كابتنة</label>
+          <div class="breakdown small" id="lnBreak"></div>
+          <button class="btn btn-primary btn-block" type="submit">اشترك</button>
+        </form>
+        <div class="card"><h3>اشتراكاتك</h3><ul class="list" id="lnList"></ul></div>
+      </div>
+    </section>
+
+    <!-- ================= SUPPORT ================= -->
+    <section data-view="support" hidden>
+      <div class="view-head"><div><h2>الدعم السريع</h2><p class="muted small">اكتب مشكلتك والرد يجيك خلال ثواني، 24 ساعة.</p></div></div>
+      <div class="card chat">
+        <div class="chat-head">
+          <span class="bot-av" id="botAv">ك</span>
+          <div class="grow"><b id="botName">كاظم</b> <span class="chip chip-accent">دعم ذكي</span><br><span class="small muted">دعم ذكي سريع · يرد خلال ثواني</span></div>
+          <button class="btn" type="button" id="toHuman">حوّلني لموظف</button>
+        </div>
+        <div class="chat-body" id="chatBody" aria-live="polite"></div>
+        <div class="chips" id="chatQuick"></div>
+        <form class="chat-input" id="chatForm" autocomplete="off"><input class="input" id="chatIn" placeholder="اكتب مشكلتك هنا…" aria-label="رسالتك"><button class="btn btn-primary" type="submit">إرسال</button></form>
+        <p class="note"><span id="botName2">كاظم</span> مساعد ذكي (ذكاء اصطناعي) مو إنسان. للمشاكل الكبيرة اضغط «حوّلني لموظف».</p>
+      </div>
+    </section>
+
+    <!-- ================= TRIPS ================= -->
+    <section data-view="trips" hidden>
+      <div class="view-head"><div><h2>رحلاتي</h2><p class="muted small">كل رحلاتك ويه هلا. اضغط على صورة الكابتن حتى تشوف ملفه.</p></div></div>
+      <div class="card"><ul class="list" id="history"></ul></div>
+    </section>
+
+    <!-- ================= WALLET ================= -->
+    <section data-view="wallet" hidden>
+      <div class="view-head"><div><h2>المحفظة والدفع</h2><p class="muted small">اشحن محفظتك، اختار طريقة الدفع، أو أضف بطاقة.</p></div></div>
+      <div class="pay-layout">
+        <div class="stack">
+          <div class="wallet">
+            <span class="small">رصيد محفظة هلا</span>
+            <span class="bal"><span class="num" id="walletBal"></span> <span style="font-size:1rem">د.ع</span></span>
+            <div class="row" id="topups"></div>
+          </div>
+          <div class="card stack"><h3>طريقة الدفع الافتراضية</h3><div class="stack" id="methods" style="gap:8px"></div></div>
+          <div class="card"><h3 style="margin-bottom:6px">آخر العمليات</h3>
+            <div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الوصف</th><th>المبلغ (د.ع)</th></tr></thead><tbody id="txBody"></tbody></table></div></div>
+        </div>
+        <form class="card stack" id="cardForm" novalidate>
+          <h3>إضافة بطاقة</h3>
+          <p class="small" style="color:var(--warn)">نسخة تجريبية: لا تُدخل بيانات بطاقة حقيقية. جرّب 4111 1111 1111 1111</p>
+          <div class="cc" aria-hidden="true">
+            <div class="row between"><span class="cc-chip"></span><b id="ccBrand">CARD</b></div>
+            <div class="cc-num" id="ccNumView">•••• •••• •••• ••••</div>
+            <div class="cc-row"><div>CARD HOLDER<b id="ccNameView">YOUR NAME</b></div><div>EXPIRES<b id="ccExpView">MM/YY</b></div></div>
+          </div>
+          <label class="field">رقم البطاقة<input class="input ltr num" id="ccNum" inputmode="numeric" autocomplete="off" maxlength="19" placeholder="0000 0000 0000 0000"></label><span class="err" id="eNum"></span>
+          <label class="field">الاسم على البطاقة<input class="input ltr" id="ccName" autocomplete="off" placeholder="MUSTAFA HASSAN"></label><span class="err" id="eName"></span>
+          <div class="grid-2">
+            <div><label class="field">تاريخ الانتهاء<input class="input ltr num" id="ccExp" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="MM/YY"></label><span class="err" id="eExp"></span></div>
+            <div><label class="field">CVV<input class="input ltr num" id="ccCvv" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="123"></label><span class="err" id="eCvv"></span></div>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">حفظ البطاقة</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ================= ACCOUNT ================= -->
+    <section data-view="account" hidden>
+      <div class="view-head"><div><h2>حسابي</h2><p class="muted small">بياناتك، أماكنك المحفوظة، والأمان.</p></div></div>
+      <div class="stack">
+        <div class="card profile-head">
+          <span class="avatar" id="riderAvatar">م ح</span>
+          <div style="flex:1;min-width:0"><h3 id="riderNameView"></h3><p class="muted small"><span class="ltr num" id="riderPhoneView"></span> · عضو من آذار 2024</p></div>
+          <span class="chip chip-ok">حساب موثّق</span>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="v num" id="rsTrips"></div><div class="k">رحلة مكتملة</div></div>
+          <div class="stat"><div class="v num">4.9</div><div class="k">تقييمك كزبون</div></div>
+          <div class="stat"><div class="v num" id="rsSpent"></div><div class="k">مجموع المصروف (د.ع)</div></div>
+          <div class="stat"><div class="v num" id="rsSaved"></div><div class="k">وفّرت بالخصومات (د.ع)</div></div>
+        </div>
+        <div class="grid-2">
+          <form class="card stack" id="riderForm" novalidate>
+            <h3>المعلومات الشخصية</h3>
+            <label class="field">الاسم الكامل<input class="input" id="rName"></label>
+            <label class="field">رقم الهاتف<input class="input ltr num" id="rPhone" inputmode="tel"></label>
+            <label class="field">البريد الإلكتروني<input class="input ltr" id="rEmail" type="email"></label>
+            <label class="field">رقم شخص للطوارئ<input class="input ltr num" id="rEmergency" inputmode="tel"></label>
+            <div class="grid-2" style="gap:10px">
+              <label class="field">العمر<input class="input num" id="rAge" inputmode="numeric" maxlength="3"></label>
+              <label class="field">تحب نخاطبك بـ<select class="input" id="rTitle"><option value="none">بدون لقب</option><option value="akh">أخوي</option><option value="ukht">أختي</option><option value="haji">حجي</option><option value="hajia">حجية</option></select></label>
+            </div>
+            <p class="note">نستخدمهن بس حتى نرحب بيك بالطريقة اللي تحبها. تكدر تغيرهن أي وقت.</p>
+            <span class="err" id="rErrForm"></span>
+            <button class="btn btn-primary" type="submit">حفظ التغييرات</button>
+          </form>
+          <div class="stack">
+            <div class="card stack" style="gap:8px"><div class="row between"><h3>نقاط هلا</h3><span class="chip chip-accent">كل 100 د.ع = نقطة</span></div>
+              <div class="row between"><span class="pts num" id="ptsVal"></span><button class="btn btn-primary" type="button" id="ptsRedeem">بدّل 1,000 نقطة بـ 10,000 د.ع</button></div>
+              <div class="progress"><i id="ptsBar"></i></div><p class="note" id="ptsHint"></p></div>
+            <div class="card"><h3>الكباتن المفضلين</h3><ul class="list" id="favList"></ul></div>
+            <div class="card"><h3>الأماكن المحفوظة</h3><ul class="list" id="savedPlaces"></ul></div>
+            <div class="card">
+              <h3>المزيد</h3>
+              <a class="link-row" href="#line"><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span><span class="grow">هلا خط<br><span class="small muted">اشتراك شهري للدوام والمدارس</span></span></a>
+              <a class="link-row" href="#wallet"><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></span><span class="grow">المحفظة وطرق الدفع</span></a>
+              <a class="link-row" href="#trips"><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="grow">سجل الرحلات</span></a>
+              <button class="link-row" type="button" id="btnInvite"><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7"/></svg></span><span class="grow">ادعُ صديق واحصل على 5,000 د.ع<br><span class="small muted">كودك: <b class="ltr">HALA-MUSTAFA</b></span></span></button>
+              <button class="link-row" type="button" id="btnSupport"><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7M12 17v.5"/></svg></span><span class="grow">المساعدة والدعم<br><span class="small muted">خدمة الزبائن: <b class="ltr num">+964 780 000 4252</b></span></span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CAPTAIN APP: HOME ================= -->
+    <section data-view="cap-home" data-app-cap hidden>
+      <div class="ride">
+        <div class="map-wrap">
+          <div id="capMap" style="position:absolute;inset:0" dir="ltr" aria-label="خريطة الكابتن"></div>
+          <a class="nav-ext" id="navExt" href="#" target="_blank" rel="noopener" hidden>افتح الطريق بخرائط Google ↗</a>
+          <div class="map-tools"><button class="fab" id="capFit" type="button" title="موقعي" aria-label="موقعي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button></div>
+        </div>
+        <div class="card stack panel" id="capPanel">
+          <div class="row between">
+            <div class="row" style="gap:10px"><span class="cap-photo sm" data-cap-photo></span><div><b data-cap-title></b><br><span class="status-chip" id="cStatus">غير متصل</span></div></div>
+            <label class="switch"><input type="checkbox" id="cOnline"><span class="track"></span></label>
+          </div>
+          <div class="mini">
+            <div><b class="num" id="cmEarn"></b><span>أرباح اليوم (د.ع)</span></div>
+            <div><b class="num" id="cmTrips"></b><span>رحلات اليوم</span></div>
+            <div><b class="num" id="cmHours"></b><span>ساعات الدوام</span></div>
+          </div>
+          <label class="check"><input type="checkbox" id="cHome"> رايح للبيت: طلبات على طريقي بس</label>
+          <select class="input" id="cHomeSel" hidden aria-label="وين البيت"></select>
+          <p class="note" id="cRest"></p>
+          <div class="goal"><div class="row between"><span>هدف اليوم: <b class="num" id="cGoalTxt"></b> رحلة ← مكافأة <b class="num" id="cGoalBonus"></b> د.ع</span></div><div class="progress"><i id="cGoalBar"></i></div></div>
+
+          <div class="stack" data-cstep="offline">
+            <p class="muted small">أنت غير متصل. ابدأ الدوام حتى توصلك طلبات الزبائن القريبة منك.</p>
+            <button class="btn btn-ok big-btn btn-block" id="cGo" type="button">ابدأ الدوام</button>
+          </div>
+          <div class="stack" data-cstep="idle" hidden style="text-align:center">
+            <div class="spinner" aria-hidden="true"></div>
+            <h3>ندوّر لك على طلبات…</h3>
+            <p class="muted small">المناطق البرتقالية على الخريطة بيها طلب عالي وأسعار أعلى.</p>
+          </div>
+          <div class="stack" data-cstep="request" hidden><div id="cReq"></div></div>
+          <div class="stack" data-cstep="pickup" hidden>
+            <div class="row between"><h3>روح للزبون</h3><span class="chip chip-accent num" id="cPickEta"></span></div>
+            <div class="progress"><i id="cPickBar"></i></div>
+            <div class="rider-row" id="cRider1"></div>
+            <div class="points"><span class="dot-a"></span><span class="val" id="cPickName"></span><span></span></div>
+            <div class="actions" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+              <button type="button" data-cact="call"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>اتصال بالزبون</button>
+              <button type="button" data-cact="msg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></svg>رسالة</button>
+              <button type="button" data-cact="sos" class="sos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16v.5"/></svg>طوارئ</button>
+            </div>
+            <div class="drawer" id="cDrawer" hidden></div>
+            <button class="btn btn-primary big-btn btn-block" id="cArrived" type="button" disabled>وصلت لموقع الزبون</button>
+            <button class="btn btn-ghost btn-danger" id="cCancel" type="button">إلغاء الرحلة</button>
+          </div>
+          <div class="stack" data-cstep="waiting" hidden>
+            <h3>بانتظار الزبون</h3>
+            <div class="rider-row" id="cRider2"></div>
+            <div class="timer-big num" id="cWait">0:00</div>
+            <label class="field">رمز الأمان من الزبون<input class="input num ltr" id="cPin" inputmode="numeric" maxlength="4" placeholder="4 أرقام" style="text-align:center;font-size:1.3rem;letter-spacing:.3em"></label>
+            <p class="note">اطلب الرمز من الزبون قبل لا تبدي. (تجريبي: رمز هالزبون <b class="num ltr" id="cPinHint"></b>)</p>
+            <p class="muted small" style="text-align:center">الانتظار مجاني أول 3 دقايق، وبعدها ينحسب 250 د.ع لكل دقيقة.</p>
+            <button class="btn" type="button" data-cact="msg">دردشة ويه الزبون</button>
+            <button class="btn btn-ok big-btn btn-block" id="cStart" type="button">الزبون صعد، ابدأ الرحلة</button>
+            <button class="btn btn-ghost btn-danger" id="cNoShow" type="button">الزبون ما إجه (إلغاء مع رسوم)</button>
+          </div>
+          <div class="stack" data-cstep="trip" hidden>
+            <div class="row between"><h3>بالطريق للوجهة</h3><span class="chip chip-accent num" id="cTripEta"></span></div>
+            <div class="progress"><i id="cTripBar"></i></div>
+            <div class="points"><span class="dot-b"></span><span class="val" id="cDropName"></span><span></span></div>
+            <div class="receipt small"><span class="muted">الزبون</span><span id="cTripRider"></span><span class="muted">الدفع</span><span id="cTripPay"></span><span class="muted">الأجرة المتوقعة</span><b id="cTripFare"></b></div>
+            <button class="btn" type="button" data-cact="msg">دردشة ويه الزبون</button>
+            <button class="btn btn-primary big-btn btn-block" id="cEnd" type="button" disabled>إنهاء الرحلة</button>
+          </div>
+          <div class="tchat" id="cChat" hidden>
+            <div class="tchat-head"><b id="cChatTitle">دردشة</b><span class="lock">محادثة خاصة بهالرحلة · تنحذف من تخلص الرحلة · أرقام الهواتف تنخفي</span></div>
+            <div class="tchat-body" id="cChatBody" aria-live="polite"></div>
+            <div class="chips" id="cChatQuick"></div>
+            <form class="chat-input" id="cChatForm" autocomplete="off"><input class="input" id="cChatIn" placeholder="اكتب رسالة للزبون…" aria-label="رسالة للزبون"><button class="btn btn-primary" type="submit">إرسال</button></form>
+          </div>
+          <div class="stack" data-cstep="collect" hidden>
+            <div style="text-align:center"><span class="chip chip-ok">انتهت الرحلة</span></div>
+            <div id="cCollectBox" class="stack"></div>
+            <div><p class="small muted" style="text-align:center;margin-bottom:4px">قيّم الزبون</p><div class="stars" id="cStars"></div></div>
+            <button class="btn btn-ok big-btn btn-block" id="cDone" type="button"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CAPTAIN APP: EARNINGS ================= -->
+    <section data-view="cap-earn" hidden>
+      <div class="view-head"><div><h2>الأرباح</h2><p class="muted small">أرباحك، عمولة هلا، والتحويل لحسابك.</p></div></div>
+      <div class="stack">
+        <div class="stats">
+          <div class="stat"><div class="v num" id="ceToday"></div><div class="k">صافي اليوم (د.ع)</div></div>
+          <div class="stat"><div class="v num" id="ceWeek"></div><div class="k">صافي الأسبوع (د.ع)</div></div>
+          <div class="stat"><div class="v num" id="ceTrips"></div><div class="k">رحلات اليوم</div></div>
+          <div class="stat"><div class="v num" id="ceAvg"></div><div class="k">معدل الرحلة (د.ع)</div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><div class="row between" style="margin-bottom:6px"><h3>أرباح الأسبوع</h3><span class="small muted">بالألف دينار</span></div>
+            <svg class="chart" id="chart" viewBox="0 0 420 220" width="100%" role="img" aria-label="أرباح الأسبوع"></svg></div>
+          <div class="card stack"><h3>تفاصيل اليوم</h3><div class="breakdown" id="ceBreak"></div></div>
+        </div>
+        <div class="grid-2">
+          <div class="wallet">
+            <span class="small">رصيدك عند هلا (جاهز للتحويل)</span>
+            <span class="bal"><span class="num" id="ceBal"></span> <span style="font-size:1rem">د.ع</span></span>
+            <span class="small">الكاش اللي بيدك من رحلات اليوم: <b class="num" id="ceCash"></b> د.ع</span>
+            <div class="row"><button class="btn" id="cePayZain" type="button">حوّل إلى زين كاش</button><button class="btn" id="cePayBank" type="button">حوّل للحساب البنكي</button></div>
+          </div>
+          <div class="card"><h3>التحويلات السابقة</h3><ul class="list" id="cePayouts"></ul></div>
+        </div>
+        <div class="grid-2">
+          <div class="card stack">
+            <h3>حاسبة البانزين</h3>
+            <div class="grid-2" style="gap:10px">
+              <label class="field">سعر اللتر (د.ع)<input class="input num" id="fPrice" inputmode="numeric" value="750"></label>
+              <label class="field">الصرفية (لتر لكل 100 كم)<input class="input num" id="fCons" inputmode="decimal" value="10"></label>
+            </div>
+            <label class="field">الكيلومترات اليوم<input class="input num" id="fKm" inputmode="numeric"></label>
+            <div class="breakdown" id="fOut"></div>
+          </div>
+          <div class="card"><div class="row between"><h3>ترتيب كباتن الشهر</h3><span class="small muted">حسب التقييم والرحلات</span></div><ul class="list board" id="board"></ul>
+            <p class="note">أول 3 ياخذون مكافأة 50,000 د.ع وشارة "كابتن مميز".</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CAPTAIN APP: TRIPS ================= -->
+    <section data-view="cap-trips" hidden>
+      <div class="view-head"><div><h2>رحلاتي ككابتن</h2><p class="muted small">رحلات اليوم وتقييمك للزبائن.</p></div></div>
+      <div class="card"><ul class="list" id="ctList"></ul></div>
+    </section>
+
+    <!-- ================= CAPTAIN APP: ME ================= -->
+    <section data-view="cap-me" data-app-cap hidden>
+      <div class="view-head"><div><h2>حساب الكابتن</h2></div></div>
+      <div class="stack">
+        <div class="card profile-head">
+          <span class="cap-photo" data-cap-photo style="width:68px;height:68px"></span>
+          <div style="flex:1;min-width:0"><h3 data-cap-title></h3><p class="muted small">★ <b class="num" data-cap-rating></b> · <span class="num" data-cap-trips></span> رحلة · نسبة القبول <span class="num" data-cap-accept></span></p></div>
+          <a class="btn" href="#captain">ملفي كما يشوفه الزبون</a>
+        </div>
+        <div class="grid-2">
+          <div class="card stack">
+            <h3>السيارة</h3>
+            <div class="specs">
+              <div><span>الموديل</span><b data-cap-car></b></div>
+              <div><span>سنة الصنع</span><b class="num" data-cap-year></b></div>
+              <div><span>اللون</span><b data-cap-color></b></div>
+              <div><span>اللوحة</span><b>البصرة <span class="num" data-cap-plate-no></span></b></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>الإعدادات</h3>
+            <div class="set-row"><span>تطبيق الملاحة</span><div class="seg" id="cNavPref"><button type="button" data-v="google" aria-pressed="true">Google</button><button type="button" data-v="waze" aria-pressed="false">Waze</button></div></div>
+            <div class="set-row"><span>استقبال رحلات الدفع النقدي</span><label class="switch"><input type="checkbox" id="cCashOk" checked><span class="track"></span></label></div>
+            <div class="set-row"><span>صوت تنبيه الطلبات</span><label class="switch"><input type="checkbox" checked><span class="track"></span></label></div>
+            <div class="set-row"><span>دعم الكباتن (24 ساعة)<br><span class="small muted ltr num">+964 780 000 4253</span></span><a class="btn" href="#support">كلّم زهراء</a></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>المستمسكات</h3>
+          <ul class="list">
+            <li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/></svg></span><span class="grow">إجازة السوق<br><span class="small muted">نافذة لغاية 08/2029</span></span><span class="chip chip-ok">موثّقة</span></li>
+            <li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14v-5l-2-5H7l-2 5z"/></svg></span><span class="grow">سنوية السيارة<br><span class="small muted">نافذة لغاية 03/2027</span></span><span class="chip chip-ok">موثّقة</span></li>
+            <li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span><span class="grow">وثيقة التأمين<br><span class="small muted">تنتهي بعد 18 يوم</span></span><span class="chip chip-warn">جدّدها قريباً</span></li>
+            <li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span><span class="grow">فحص السيارة الدوري<br><span class="small muted">مطلوب قبل 30/11/2026</span></span><span class="chip chip-bad">مطلوب</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let toastT; function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ================= captain data ================= */
+const CAPS={taxi:{
+  key:'taxi', name:'أحمد الكامل', first:'أحمد', photo:'assets/captain.jpg', seats:'4 ركاب',
+  rating:4.92, ratings:1186, trips:1284, since:'آذار 2023', years:3, accept:'96%', cancel:'1.2%',
+  phone:'+964 771 845 2290', langs:'العربية والإنكليزية', areas:'العشار، الجزائر، المعقل والتنومة',
+  car:'تويوتا كامري', year:2021, color:'أبيض وبرتقالي', plateNo:'45821 أ',
+  features:['مكيّفة','شاحن موبايل','ماي بارد','ممنوع التدخين','يقبل الدفع بالبطاقة'],
+  dist:{5:1012,4:132,3:26,2:9,1:7},
+  compliments:[{k:'سياقة آمنة',n:412,i:'shield'},{k:'سيارة نظيفة',n:388,i:'spark'},{k:'يعرف الطرق',n:301,i:'map'},{k:'محترم وخلوق',n:276,i:'heart'},{k:'بالوقت',n:198,i:'clock'}],
+  reviews:[
+    {w:'زينب',r:5,t:'الكابتن محترم جداً والسيارة نظيفة ومكيّفة. وصلني للمطار قبل الوقت.',d:'قبل يومين'},
+    {w:'علي',r:5,t:'يعرف طرق البصرة زين، تجنّب زحمة شارع الجزائر.',d:'الأسبوع الماضي'},
+    {w:'حسين',r:4,t:'رحلة مريحة، بس تأخر دقيقتين عن الوقت.',d:'قبل أسبوعين'},
+    {w:'مريم',r:5,t:'أمان وسياقة هادئة، أنصح بيه للعوائل.',d:'تشرين الأول'},
+  ],
+  checks:[['الهوية الوطنية','تم التحقق'],['إجازة السوق','نافذة لغاية 2029'],['فحص خلفية أمنية','تم 2025'],['فحص السيارة الدوري','تم 2025'],['دورة السلامة من هلا','مكتملة']],
+},
+cargo:{
+  key:'cargo', name:'حيدر جبار', first:'حيدر', photo:'assets/captain-cargo.jpg', seats:'حمولة لحد 1.5 طن',
+  rating:4.88, ratings:642, trips:731, since:'حزيران 2024', years:2, accept:'93%', cancel:'2.0%',
+  phone:'+964 773 210 6648', langs:'العربية', areas:'كل مناطق البصرة',
+  car:'كيا بونگو (حمل)', year:2019, color:'أبيض', plateNo:'73104 ب',
+  features:['حبال وأغطية للحماية','عربانة يد','عمال عند الطلب','يقبل الدفع بالبطاقة'],
+  dist:{5:540,4:78,3:15,2:5,1:4},
+  compliments:[{k:'حريص على الأغراض',n:233,i:'shield'},{k:'بالوقت',n:198,i:'clock'},{k:'محترم وخلوق',n:176,i:'heart'},{k:'يعرف الطرق',n:120,i:'map'}],
+  reviews:[
+    {w:'أم علي',r:5,t:'نقل الثلاجة والغسالة بدون ولا خدش، والعمال محترمين.',d:'قبل 3 أيام'},
+    {w:'كرار',r:5,t:'جاب الطابوق والسمنت للموقع بالوقت.',d:'الأسبوع الماضي'},
+    {w:'سجاد',r:4,t:'شغل زين بس تأخر ربع ساعة.',d:'قبل أسبوعين'},
+  ],
+  checks:[['الهوية الوطنية','تم التحقق'],['إجازة السوق (حمل)','نافذة لغاية 2028'],['سنوية السيارة','نافذة'],['فحص السيارة الدوري','تم 2025'],['تدريب التحميل الآمن','مكتمل']],
+}};
+CAPS.taxi.ac=96;CAPS.taxi.top=true;CAPS.cargo.ac=91;
+CAPS.lady={key:'lady',female:true,name:'زينب علي',first:'زينب',photo:'assets/captain-lady.jpg',seats:'4 ركاب',
+  rating:4.96,ratings:388,trips:412,since:'كانون الثاني 2025',years:1,accept:'95%',cancel:'0.8%',
+  phone:'+964 772 501 3384',langs:'العربية',areas:'العشار، الجزائر، الجبيلة',
+  car:'هيونداي إلنترا',year:2022,color:'أبيض',plateNo:'61290 ج',ac:98,
+  features:['مكيّفة','مقعد أطفال','شاحن موبايل','ممنوع التدخين'],
+  dist:{5:350,4:30,3:5,2:2,1:1},
+  compliments:[{k:'سياقة هادئة',n:160,i:'shield'},{k:'سيارة نظيفة',n:142,i:'spark'},{k:'بالوقت',n:120,i:'clock'},{k:'محترمة',n:110,i:'heart'}],
+  reviews:[{w:'أم حسين',r:5,t:'ارتحت هواي، أخذتني ويه الجهال للعيادة وانتظرتنا.',d:'قبل يومين'},{w:'نور',r:5,t:'أمان وراحة، صرت أطلبها كل يوم للجامعة.',d:'الأسبوع الماضي'}],
+  checks:[['الهوية الوطنية','تم التحقق'],['إجازة السوق','نافذة لغاية 2030'],['فحص خلفية أمنية','تم 2025'],['فحص السيارة الدوري','تم 2025']]};
+let CAPTAIN=CAPS.taxi;
+/* feminine wording when the captain is a woman */
+const gx=t=>!CAPTAIN.female?t:t.replace(/الكابتن وصل!/g,'الكابتنة وصلت!').replace(/رايح ياخذ/g,'رايحة تاخذ').replace(/الكابتن /g,'الكابتنة ').replace(/جايلك/g,'جايتلك').replace(/جايلچ/g,'جايتلچ').replace(/جايك/g,'جايتك').replace(/ويوصل/g,'وتوصل').replace(/عليه\./g,'عليها.').replace(/الكابتن وصل!/g,'الكابتنة وصلت!').replace(/رايح ياخذ/g,'رايحة تاخذ');
+function photoHTML(cap=CAPTAIN){return cap.hasPhoto?`<img src="${cap.photo}" alt="صورة ${esc(cap.name)}">`:esc(cap.first[0]);}
+const capTitle=(cap,pre)=>(pre?'<span class="hk">'+(cap.female?'الكابتنة':'الكابتن')+'</span> ':'')+esc(cap.name);
+const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
+function fillCaptain(){
+  $$('[data-cap-title]').forEach(el=>{el.innerHTML=capTitle(el.closest('[data-app-cap]')?CAPS.taxi:CAPTAIN,el.hasAttribute('data-cap-prefix'));});
+  $$('[data-cap-photo]').forEach(el=>{el.innerHTML=photoHTML(el.closest('[data-app-cap]')?CAPS.taxi:CAPTAIN)+(el.classList.contains('lg')?`<span class="verified" title="موثّق">${CHECK}</span>`:'');});
+  const vals={name:CAPTAIN.name,first:CAPTAIN.first,rating:CAPTAIN.rating.toFixed(2),ratings:fmt(CAPTAIN.ratings),trips:fmt(CAPTAIN.trips),years:CAPTAIN.years,accept:CAPTAIN.accept,cancel:CAPTAIN.cancel,since:CAPTAIN.since,langs:CAPTAIN.langs,areas:CAPTAIN.areas,car:CAPTAIN.car,year:CAPTAIN.year,color:CAPTAIN.color,'plate-no':CAPTAIN.plateNo,seats:CAPTAIN.seats,ac:CAPTAIN.ac||'—'};
+  $('#topBadge').hidden=!CAPTAIN.top;$('#favBtn').textContent=S.favs.has(CAPTAIN.key)?'من المفضلين ♥':'أضف للمفضلين ♡';
+  Object.entries(vals).forEach(([k,v])=>$$(`[data-cap-${k}]`).forEach(el=>{const cap=el.closest('[data-app-cap]')?CAPS.taxi:CAPTAIN;const vv={name:cap.name,first:cap.first,rating:cap.rating.toFixed(2),trips:fmt(cap.trips),accept:cap.accept,car:cap.car,year:cap.year,color:cap.color,'plate-no':cap.plateNo}[k];el.textContent=vv!==undefined?vv:v;}));
+  $('#capFeatures').innerHTML=CAPTAIN.features.map(f=>`<span class="chip chip-accent">${esc(f)}</span>`).join('');
+  const tot=Object.values(CAPTAIN.dist).reduce((a,b)=>a+b,0);
+  $('#capBars').innerHTML=[5,4,3,2,1].map(s=>{const p=CAPTAIN.dist[s]/tot*100;return `<div class="bar-row"><span class="num">${s} ★</span><span class="track"><i style="width:${p.toFixed(1)}%"></i></span><span class="num small muted">${p.toFixed(0)}%</span></div>`;}).join('');
+  const IC={shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>',map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'};
+  $('#capCompl').innerHTML=CAPTAIN.compliments.map(c=>`<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[c.i]}</svg><b class="num">${fmt(c.n)}</b><span class="small">${esc(c.k)}</span></div>`).join('');
+  $('#capReviews').innerHTML=CAPTAIN.reviews.map(r=>`<div class="review"><span class="who">${esc(r.w[0])}</span><div style="min-width:0"><b>${esc(r.w)}</b> <span class="stars-row small">${'★'.repeat(r.r)}</span> <span class="small muted">· ${esc(r.d)}</span><p class="small">${esc(r.t)}</p></div></div>`).join('');
+  $('#capChecks').innerHTML=CAPTAIN.checks.map(c=>`<li><span class="icon-dot" style="color:var(--ok)">${CHECK}</span><span class="grow">${esc(c[0])}</span><span class="small muted">${esc(c[1])}</span></li>`).join('');
+}
+
+/* ================= state ================= */
+const PLACES=[
+  {n:'العشار',c:[30.5130,47.8385]},{n:'كورنيش شط العرب',c:[30.5175,47.8445]},{n:'ساحة سعد',c:[30.5080,47.8180]},
+  {n:'البصرة القديمة',c:[30.5005,47.8290]},{n:'المعقل',c:[30.5450,47.8150]},{n:'الجزائر',c:[30.5160,47.8030]},
+  {n:'الجبيلة',c:[30.4950,47.8130]},{n:'الحيانية',c:[30.4870,47.7720]},{n:'التنومة',c:[30.5120,47.8700]},
+  {n:'جامعة البصرة',c:[30.5650,47.7550]},{n:'مطار البصرة الدولي',c:[30.5491,47.6621]},{n:'المدينة الرياضية',c:[30.4830,47.7360]},
+  {n:'الزبير',c:[30.3890,47.7020]},{n:'أبو الخصيب',c:[30.4440,47.9740]},
+];
+const placeBy=n=>PLACES.find(p=>p.n===n);
+const TYPES=[
+  {id:'eco',name:'هلا اقتصادي',desc:'4 ركاب',mult:1,eta:3},
+  {id:'comfort',name:'هلا مريح',desc:'سيارات حديثة',mult:1.35,eta:5},
+  {id:'family',name:'هلا عائلي',desc:'6 ركاب وحقائب',mult:1.7,eta:7},
+];
+const S={
+  type:'eco', pay:'wallet', balance:37500, promo:null, saving:6000,
+  methods:[{id:'cash',label:'نقداً',sub:'ادفع للكابتن مباشرة'},{id:'wallet',label:'محفظة هلا',sub:''},{id:'card4821',label:'Visa •••• 4821',sub:'تنتهي 09/28'},{id:'zain',label:'زين كاش',sub:'+964 780 •••• 112'}],
+  tx:[{d:'10/11',t:'رحلة: الجزائر ← العشار',a:-7000},{d:'08/11',t:'شحن المحفظة',a:25000},{d:'06/11',t:'رحلة: العشار ← البصرة القديمة',a:-4500},{d:'02/11',t:'استرجاع رحلة ملغاة',a:3000}],
+  history:[
+    {d:'10/11 · 8:40 م',from:'الجزائر',to:'العشار',fare:7000,km:3.9,rating:5},
+    {d:'06/11 · 4:15 م',from:'العشار',to:'البصرة القديمة',fare:4500,km:1.8,rating:5},
+    {d:'01/11 · 11:05 ص',from:'التنومة',to:'مطار البصرة الدولي',fare:16500,km:20.1,rating:4},
+    {d:'28/10 · 10:00 ص',from:'الجبيلة',to:'الحيانية',fare:27500,km:4.6,rating:5,cap:'cargo',svc:'نقل · بيكب · ثلاجة، غسالة'},
+  ],
+  rider:{name:'مصطفى حسن',phone:'+964 770 123 4567',email:'mustafa.h@example.com',emergency:'+964 780 555 0192',age:34,title:'akh'},
+  points:1240, favs:new Set(['taxi']), lines:[],
+  saved:[{k:'البيت',p:'العشار'},{k:'الشغل',p:'الجزائر'},{k:'بيت أهلي',p:'المعقل'}],
+  driver:{online:true,earn:46500,trips:7,list:[{t:'7:10 م',r:'المعقل ← الجبيلة',f:6500},{t:'5:45 م',r:'التنومة ← العشار',f:7000},{t:'4:20 م',r:'الجزائر ← الحيانية',f:7500}]},
+  week:[42,55,38,61,70,84,0],
+};
+const fare=(km,mult)=>Math.max(3000,Math.round((2000+km*750)*mult/250)*250);
+const discountFor=f=>S.promo?Math.min(3000,Math.round(f*0.1/250)*250):0;
+function today(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
+
+/* ================= views ================= */
+const VIEWS=['ride','trips','wallet','account','line','captain','support','cap-home','cap-earn','cap-trips','cap-me'];
+const NAVOF={captain:null,line:'account',support:null};
+const APP=new URLSearchParams(location.search).get('app')==='captain'?'captain':'rider';
+let lastView=APP==='captain'?'cap-home':'ride', role=APP;
+if(APP==='captain'){document.title='هلا زبون';document.getElementById('brandTag').textContent='هلا زبون · تطبيق الكباتن';}
+function route(){
+  const home=APP==='captain'?'cap-home':'ride';
+  let v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):home;
+  if(v!=='captain'&&v!=='support'&&(v.startsWith('cap-')?'captain':'rider')!==APP) v=home;
+  if(v==='support') openSupport();
+  $$('[data-view]').forEach(s=>s.hidden=s.dataset.view!==v);
+  $('#riderNav').hidden=role!=='rider'; $('#capNav').hidden=role!=='captain';
+  $('#topAvatar').href=role==='captain'?'#cap-me':'#account';
+  const nav=v in NAVOF?NAVOF[v]:v;
+  $$('.nav a').forEach(a=>a.dataset.nav===nav?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current'));
+  if(v==='ride') setTimeout(()=>map.invalidateSize(),50);
+  if(v==='cap-home') setTimeout(()=>{initCapMap();cmap.invalidateSize();},50);
+  if(v==='cap-earn') renderCapEarn();
+  if(v!=='captain'&&v!=='support') lastView=v;
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route);
+$('#capBack').addEventListener('click',()=>{location.hash=lastView;});
+$('#capBook').addEventListener('click',()=>{location.hash='ride';});
+
+/* ================= map ================= */
+const CENTER=[30.512,47.815], VIEWBOX='47.55,30.70,48.10,30.30';
+const map=L.map('map',{maxBounds:L.latLngBounds([30.15,47.35],[30.85,48.25]),minZoom:10,maxZoom:19}).setView(CENTER,13);
+map.zoomControl.setPosition('topleft');
+L.control.scale({position:'bottomleft',imperial:false}).addTo(map);
+/* base maps: several providers; if one is blocked or down we switch to the next automatically */
+const PROVIDERS=[
+  {id:'streets',url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',o:{attribution:'© OpenStreetMap'}},
+  {id:'clean',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',o:{attribution:'Tiles © Esri'}},
+  {id:'sat',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',o:{attribution:'Imagery © Esri'},manual:true},
+];
+function baseMap(m,warnEl,onSwitch){
+  const st={layer:null,id:null,ok:0,err:0,timer:null,tried:new Set()};
+  function use(id,auto){
+    const p=PROVIDERS.find(x=>x.id===id);if(st.layer)m.removeLayer(st.layer);clearTimeout(st.timer);
+    st.id=id;st.ok=0;st.err=0;st.tried.add(id);
+    st.layer=L.tileLayer(p.url,{maxZoom:19,...p.o}).addTo(m);
+    st.layer.on('tileload',()=>{st.ok++;if(warnEl)warnEl.hidden=true;});
+    st.layer.on('tileerror',()=>{st.err++;if(!st.ok&&st.err>=4)next();});
+    st.timer=setTimeout(()=>{if(!st.ok)next();},7000);
+    if(onSwitch)onSwitch(id,auto);
+  }
+  function next(){
+    clearTimeout(st.timer);
+    const nx=PROVIDERS.find(p=>!p.manual&&!st.tried.has(p.id));
+    if(nx){use(nx.id,true);}
+    else if(warnEl){warnEl.hidden=false;}
+  }
+  st.use=id=>{st.tried=new Set();use(id,false);};
+  st.retry=()=>{st.tried=new Set();use(PROVIDERS[0].id,true);};
+  use(PROVIDERS[0].id,true);
+  return st;
+}
+const BASE=baseMap(map,$('#tileWarn'),id=>{$$('.layer-sw button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.layer===id));});
+$('#tileWarn').addEventListener('click',()=>{$('#tileWarn').hidden=true;BASE.retry();});
+/* service area: Basra city only */
+const AREA=[[30.62,47.64],[30.62,47.90],[30.53,47.93],[30.46,48.00],[30.40,47.97],[30.36,47.70],[30.42,47.62]];
+function inArea(ll){const x=ll.lng,y=ll.lat;let ins=false;for(let i=0,j=AREA.length-1;i<AREA.length;j=i++){const yi=AREA[i][0],xi=AREA[i][1],yj=AREA[j][0],xj=AREA[j][1];if(((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))ins=!ins;}return ins;}
+function drawArea(m){L.polygon([[[29.6,46.6],[29.6,49],[31.4,49],[31.4,46.6]],AREA],{stroke:false,fillColor:'#12343B',fillOpacity:.16,interactive:false}).addTo(m);
+  L.polygon(AREA,{color:'#12343B',weight:2,dashArray:'6 6',fill:false,interactive:false}).addTo(m).bindTooltip('حدود الخدمة: داخل مدينة البصرة',{sticky:true});}
+drawArea(map);
+$$('.layer-sw button').forEach(b=>b.addEventListener('click',()=>BASE.use(b.dataset.layer)));
+
+const pinIcon=k=>L.divIcon({className:'',html:`<div class="pin ${k==='a'?'pin-a':k==='s'?'pin-s':'pin-b'}" data-l="${k==='a'?'من':k==='s'?'وقفة':'إلى'}"></div>`,iconSize:[30,40],iconAnchor:[15,38]});
+const TRUCK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h12v10H2zM14 9h4l4 4v3h-8z"/><circle cx="6" cy="17" r="1.5" fill="currentColor"/><circle cx="18" cy="17" r="1.5" fill="currentColor"/></svg>';
+const truckIcon=L.divIcon({className:'',html:`<div class="taxi truck">${TRUCK_SVG}</div>`,iconSize:[30,30],iconAnchor:[15,15]});
+const taxiIcon=(mine,cap=CAPTAIN)=>L.divIcon({className:'',html:mine?`<div class="taxi mine">${photoHTML(cap)}</div>`:`<div class="taxi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14v-5l-2-5H7l-2 5z"/><circle cx="8" cy="17" r="1.5" fill="currentColor"/><circle cx="16" cy="17" r="1.5" fill="currentColor"/></svg></div>`,iconSize:mine?[44,44]:[30,30],iconAnchor:mine?[22,22]:[15,15]});
+
+let step='plan';
+const P={a:null,b:null,s:null}, M={a:null,b:null,s:null};
+const stopFee=()=>P.s&&CG.svc!=='cargo'?1000:0;
+let mode='b';
+function setMode(m){mode=m;$('#modeA').setAttribute('aria-pressed',m==='a');$('#modeB').setAttribute('aria-pressed',m==='b');const cg=CG.svc==='cargo';$('#mapHint').textContent=m==='s'?'اضغط على الخريطة لتحديد الوقفة':m==='a'?(cg?'اضغط على الخريطة لتحديد موقع الاستلام':'اضغط على الخريطة لتحديد مكانك'):(cg?'اضغط على الخريطة لتحديد موقع التسليم':'اضغط على الخريطة لتحديد الوجهة');}
+$('#modeA').addEventListener('click',()=>setMode('a'));
+$('#modeB').addEventListener('click',()=>setMode('b'));
+function setPoint(k,ll,name,noRoute){
+  if(step!=='plan'){toast('الطلب شغّال، ما تكدر تغيّر النقاط هسه');return;}
+  if(!inArea(ll)){toast('الخدمة داخل مدينة البصرة بس. اختار مكان داخل الحدود المنقّطة');return;}
+  P[k]={ll,name:name||'جاري تحديد العنوان…'};
+  if(!M[k]){M[k]=L.marker(ll,{icon:pinIcon(k),draggable:true}).addTo(map);
+    M[k].on('dragend',()=>{const p=M[k].getLatLng();P[k]={ll:p,name:'جاري تحديد العنوان…'};renderPoints();reverse(k,p);updateRoute();});}
+  else M[k].setLatLng(ll);
+  renderPoints(); if(!name) reverse(k,ll);
+  if(k==='a'&&!P.b) setMode('b');
+  if(k==='s') setMode('b');
+  if(!noRoute) updateRoute();
+}
+function clearPoint(k){if(step!=='plan')return;if(M[k]){map.removeLayer(M[k]);M[k]=null;}P[k]=null;renderPoints();updateRoute();setMode(k==='s'?'b':k);}
+$('#clrS').addEventListener('click',()=>clearPoint('s'));
+$('#addStop').addEventListener('click',()=>{setMode('s');toast('اضغط على الخريطة أو اختار مكان من تحت حتى تحدد الوقفة');});
+$('#clrA').addEventListener('click',()=>clearPoint('a'));
+$('#clrB').addEventListener('click',()=>clearPoint('b'));
+function renderPoints(){['dotS','valS','clrS'].forEach(id=>$('#'+id).hidden=!P.s);$('#addStop').hidden=!!P.s||CG.svc==='cargo';if(P.s){$('#valS').textContent=P.s.name;}
+  ['a','b'].forEach(k=>{const el=$('#val'+k.toUpperCase());el.textContent=P[k]?P[k].name:(k==='a'?'حدد مكانك':'حدد وجهتك');el.classList.toggle('empty',!P[k]);el.title=P[k]?P[k].name:'';});}
+map.on('click',e=>setPoint(mode,e.latlng));
+
+const revCtl={};
+async function reverse(k,ll){
+  const fb='نقطة على الخريطة';
+  try{revCtl[k]?.abort();revCtl[k]=new AbortController();
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=ar&zoom=17&lat=${ll.lat}&lon=${ll.lng}`,{signal:revCtl[k].signal});
+    const j=await r.json(),a=j.address||{};
+    const nm=[a.road||a.pedestrian||a.amenity||a.shop||j.name,a.neighbourhood||a.suburb||a.quarter||a.city_district].filter(Boolean).join('، ');
+    if(P[k]&&P[k].ll.equals(ll)){P[k].name=nm||fb;renderPoints();}
+  }catch(e){if(e.name!=='AbortError'&&P[k]&&P[k].ll.equals(ll)){P[k].name=fb;renderPoints();}}
+}
+
+/* search */
+let sT,sCtl;
+const localMatches=q=>PLACES.filter(p=>p.n.includes(q)).map(p=>({n:p.n,d:'مكان معروف بالبصرة',c:p.c}));
+$('#q').addEventListener('input',()=>{clearTimeout(sT);const q=$('#q').value.trim();if(!q){$('#results').hidden=true;return;}
+  showResults(localMatches(q),q.length>=3); if(q.length>=3) sT=setTimeout(()=>remoteSearch(q),500);});
+$('#q').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(sT);const q=$('#q').value.trim();if(q.length>=2)remoteSearch(q);}});
+async function remoteSearch(q){
+  const local=localMatches(q);
+  try{sCtl?.abort();sCtl=new AbortController();
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=ar&limit=7&bounded=1&viewbox=${VIEWBOX}&q=${encodeURIComponent(q)}`,{signal:sCtl.signal});
+    const j=await r.json(); showResults(local.concat(j.map(x=>({n:x.name||x.display_name.split(',')[0],d:x.display_name,c:[+x.lat,+x.lon]}))),false);
+  }catch(e){if(e.name!=='AbortError')showResults(local,false,true);}
+}
+function showResults(list,loading,failed){
+  const ul=$('#results');ul.innerHTML='';ul.hidden=false;
+  if(!list.length){ul.innerHTML=`<li><button type="button" disabled>${loading?'جاري البحث…':failed?'البحث ما اشتغل، تأكد من الإنترنت.':'ما لكينا نتائج داخل البصرة.'}</button></li>`;return;}
+  list.forEach(x=>{const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.innerHTML='<b></b><small></small>';
+    b.querySelector('b').textContent=x.n;b.querySelector('small').textContent=x.d;
+    b.addEventListener('click',()=>{setPoint(mode,L.latLng(x.c),x.n);ul.hidden=true;$('#q').value='';});li.appendChild(b);ul.appendChild(li);});
+}
+function renderChips(){
+  const c=$('#chips');c.innerHTML='';
+  S.saved.forEach(s=>{const p=placeBy(s.p);if(!p)return;const b=document.createElement('button');b.type='button';b.className='saved';b.textContent='★ '+s.k;b.title=s.p;b.addEventListener('click',()=>setPoint(mode,L.latLng(p.c),s.k+' · '+s.p));c.appendChild(b);});
+  PLACES.slice(0,9).forEach(p=>{const b=document.createElement('button');b.type='button';b.textContent=p.n;b.addEventListener('click',()=>setPoint(mode,L.latLng(p.c),p.n));c.appendChild(b);});
+}
+
+/* route */
+let routeD=null,routeLine=null,rCtl;
+async function updateRoute(){
+  if(routeLine){map.removeLayer(routeLine);routeLine=null;}
+  routeD=null;renderTrip();
+  if(!P.a||!P.b)return;
+  const a=P.a.ll,b=P.b.ll,wp=[a].concat(P.s&&CG.svc!=='cargo'?[P.s.ll]:[]).concat([b]);
+  try{rCtl?.abort();rCtl=new AbortController();
+    const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${wp.map(p=>p.lng+','+p.lat).join(';')}?overview=full&geometries=geojson`,{signal:rCtl.signal});
+    const j=await r.json();if(j.code!=='Ok')throw new Error('x');const rt=j.routes[0];
+    routeD={coords:rt.geometry.coordinates.map(c=>L.latLng(c[1],c[0])),km:rt.distance/1000,min:Math.max(2,Math.round(rt.duration/60*1.25)),real:true};
+  }catch(e){if(e.name==='AbortError')return;let d=0;for(let i=1;i<wp.length;i++)d+=wp[i-1].distanceTo(wp[i]);const km=d/1000*1.3;routeD={coords:wp,km,min:Math.max(2,Math.round(km/28*60)),real:false};}
+  routeLine=L.polyline(routeD.coords,{color:CG.svc==='cargo'?'#12343B':'#D99A00',weight:6,opacity:.9,dashArray:routeD.real?null:'8 10'}).addTo(map);
+  map.fitBounds(routeLine.getBounds(),{padding:[50,50],maxZoom:16});
+  renderTrip();
+}
+function renderTrip(){
+  $('#tripBox').hidden=!routeD;
+  $('#routeNote').textContent=!routeD?(P.a&&P.b?'جاري حساب المسار…':'اختار مكانك ووجهتك حتى يطلعلك السعر.'):routeD.real?'المسار محسوب على شوارع البصرة.':'المسافة تقديرية (ما كدرنا نجيب المسار من الشوارع).';
+  if(!routeD)return;
+  $('#sKm').textContent=routeD.km.toFixed(1);$('#sMin').textContent=routeD.min;
+  const hr=new Date().getHours(),peak=(hr>=7&&hr<9)||(hr>=13&&hr<15)||(hr>=16&&hr<20);
+  $('#peak').hidden=!peak;if(peak)$('#peak').textContent='هسه وقت ذروة: ممكن زحمة على جسر التنومة وشارع الجزائر. نصيحة: اطلب قبل وقتك بـ 10 دقايق.';
+  const cg=CG.svc==='cargo';$('#rideOptions').hidden=cg;$('#cargoBox').hidden=!cg;$('#ladyRow').hidden=cg;
+  if(cg){renderCargo();return;}
+  $('#btnLabel').textContent='اطلب هلا';
+  const box=$('#rideOptions');box.innerHTML='';
+  const summer=[4,5,6,7,8,9].includes(new Date().getMonth());
+  TYPES.forEach(t=>{const f=fare(routeD.km,t.mult)+stopFee(),d=discountFor(f);const lab=document.createElement('label');lab.className='opt';
+    lab.innerHTML=`<input type="radio" name="rtype" value="${t.id}" ${S.type===t.id?'checked':''}>
+      <svg class="opt-ico" viewBox="0 0 44 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${t.id==='family'?'<path d="M3 22h38v-8l-4-8H8l-5 8z"/><path d="M14 6v8M26 6v8"/>':'<path d="M5 22h34v-7l-5-8H11l-6 8z"/><path d="M22 7v8"/>'}<circle cx="12" cy="23" r="3.2" fill="currentColor"/><circle cx="32" cy="23" r="3.2" fill="currentColor"/></svg>
+      <span style="min-width:0"><b>${t.name}</b><span class="small muted">${t.desc} · يوصل خلال ${t.eta} د${summer?' · تبريد مضمون':''}</span></span>
+      <span class="price">${d?`<s class="small muted num">${fmt(f)}</s><br>`:''}<span class="num">${fmt(f-d)}</span> <span class="small muted">د.ع</span></span>`;
+    lab.querySelector('input').addEventListener('change',e=>{S.type=e.target.value;renderTrip();});box.appendChild(lab);});
+  const f=fare(routeD.km,TYPES.find(t=>t.id===S.type).mult)+stopFee();$('#btnPrice').textContent=fmt(f-discountFor(f));
+  $('#btnLabel').textContent=CG.when==='later'?'احجز التكسي':'اطلب هلا';
+}
+function renderRidePay(){const s=$('#ridePay');s.innerHTML='';S.methods.forEach(m=>s.add(new Option(m.id==='wallet'?`${m.label} (${fmt(S.balance)} د.ع)`:m.label,m.id)));s.value=S.pay;}
+$('#ridePay').addEventListener('change',e=>{S.pay=e.target.value;renderMethods();});
+$('#btnPromo').addEventListener('click',()=>{const v=$('#promo').value.trim().toUpperCase();const n=$('#promoNote');n.hidden=false;
+  if(v==='HALA10'){S.promo=v;n.style.color='var(--ok)';n.textContent='تم تطبيق الكود: خصم 10% لحد 3,000 د.ع';}
+  else{S.promo=null;n.style.color='var(--bad)';n.textContent=v?'الكود غير صحيح أو منتهي.':'اكتب كود الخصم أول.';}
+  renderTrip();});
+
+
+/* ================= cargo / moving ================= */
+const VEH=[
+  {id:'stuta',name:'ستوتة',desc:'كراتين وأغراض خفيفة',base:4000,perKm:400,cap:3,eta:6},
+  {id:'pickup',name:'بيكب (كيا حمل)',desc:'ثلاجة، غسالة، مكيف',base:10000,perKm:700,cap:9,eta:10},
+  {id:'lorry',name:'لوري صغير',desc:'أثاث بيت أو مواد بناء',base:25000,perKm:1200,cap:40,eta:20},
+];
+const ITEMS=[{id:'fridge',n:'ثلاجة',v:3},{id:'washer',n:'غسالة',v:2},{id:'freezer',n:'مجمدة',v:3},{id:'ac',n:'مكيف / سبلت',v:2},{id:'stove',n:'طباخ',v:2},{id:'tv',n:'تلفزيون',v:1},
+  {id:'sofa',n:'قنفة',v:4},{id:'wardrobe',n:'كنتور',v:6},{id:'bed',n:'سرير',v:4},{id:'boxes',n:'كراتين',v:.5},{id:'cement',n:'سمنت (كيس)',v:.5},{id:'bricks',n:'طابوق (100)',v:4}];
+const FLOORS=['أرضي','الأول','الثاني','الثالث','الرابع','الخامس أو أكثر'];
+const CG={svc:'taxi',items:{fridge:1,washer:1},veh:'pickup',helpers:1,flA:0,flB:2,lift:false,wrap:false,when:'now',photos:0};
+const cargoVol=()=>Object.entries(CG.items).reduce((s,[k,n])=>s+ITEMS.find(i=>i.id===k).v*n,0);
+const itemsText=()=>Object.entries(CG.items).filter(([,n])=>n>0).map(([k,n])=>ITEMS.find(i=>i.id===k).n+(n>1?' ×'+n:'')).join('، ');
+function cargoPrice(km,vehId){const v=VEH.find(x=>x.id===vehId);const floors=CG.helpers&&!CG.lift?(CG.flA+CG.flB)*2000:0;
+  const p={trip:Math.round((v.base+km*v.perKm)/250)*250,helpers:CG.helpers*5000,floors,wrap:CG.wrap?5000:0};p.total=p.trip+p.helpers+p.floors+p.wrap;return p;}
+['flA','flB'].forEach(id=>{const sel=$('#'+id);FLOORS.forEach((f,i)=>sel.add(new Option(f,i)));sel.value=CG[id];sel.addEventListener('change',()=>{CG[id]=+sel.value;renderCargo();});});
+$('#lift').addEventListener('change',e=>{CG.lift=e.target.checked;renderCargo();});
+$('#wrap').addEventListener('change',e=>{CG.wrap=e.target.checked;renderCargo();});
+$('#hMinus').addEventListener('click',()=>{CG.helpers=Math.max(0,CG.helpers-1);renderCargo();});
+$('#hPlus').addEventListener('click',()=>{CG.helpers=Math.min(4,CG.helpers+1);renderCargo();});
+$('#forOther').addEventListener('change',e=>{$('#otherBox').hidden=!e.target.checked;});
+$('#ladyPref').addEventListener('change',e=>{if(e.target.checked)toast('راح ندوّرلك على كابتنة قريبة منك');});
+$$('#when button').forEach(b=>b.addEventListener('click',()=>{CG.when=b.dataset.v;$$('#when button').forEach(x=>x.setAttribute('aria-pressed',x===b));$('#whenAt').hidden=CG.when!=='later';
+  if(CG.when==='later'&&!$('#whenAt').value){const d=new Date(Date.now()+86400000);d.setHours(9,0,0,0);$('#whenAt').value=new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16);}renderTrip();}));
+$('#cPhotos').addEventListener('change',e=>{const t=$('#thumbs');t.innerHTML='';const fs=[...e.target.files].slice(0,6);CG.photos=fs.length;
+  fs.forEach(f=>{const im=document.createElement('img');im.alt='صورة غرض';im.src=URL.createObjectURL(f);t.appendChild(im);});if(fs.length)toast('انضافت '+fs.length+' صورة');});
+function renderCargo(){
+  const it=$('#cItems');it.innerHTML='';
+  ITEMS.forEach(x=>{const n=CG.items[x.id]||0;const d=document.createElement('div');d.className='item'+(n?' on':'');
+    d.innerHTML=`<span>${x.n}</span><span class="stepper"><button type="button" aria-label="أقل ${x.n}">−</button><b class="num">${n}</b><button type="button" aria-label="أكثر ${x.n}">+</button></span>`;
+    const [mi,pl]=d.querySelectorAll('button');mi.addEventListener('click',()=>{CG.items[x.id]=Math.max(0,n-1);renderCargo();});pl.addEventListener('click',()=>{CG.items[x.id]=Math.min(20,n+1);renderCargo();});it.appendChild(d);});
+  const vol=cargoVol();let cur=VEH.find(v=>v.id===CG.veh);if(cur.cap<vol){const ok=VEH.find(v=>v.cap>=vol);if(ok)CG.veh=ok.id;}
+  const vo=$('#vehOpts');vo.innerHTML='';
+  VEH.forEach(v=>{const fits=v.cap>=vol;const p=routeD?cargoPrice(routeD.km,v.id):null;const lab=document.createElement('label');lab.className='opt'+(fits?'':' disabled');
+    lab.innerHTML=`<input type="radio" name="veh" value="${v.id}" ${CG.veh===v.id?'checked':''} ${fits?'':'disabled'}><span class="opt-ico" style="display:grid;place-items:center">${'<svg viewBox="0 0 44 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h24v16H3z"/><path d="M27 12h8l6 6v4H27z"/><circle cx="11" cy="23" r="3.2" fill="currentColor"/><circle cx="33" cy="23" r="3.2" fill="currentColor"/></svg>'}</span><span style="min-width:0"><b>${v.name}</b><span class="small muted">${fits?v.desc+' · يوصل خلال '+v.eta+' د':'الأغراض أكبر من حجمها'}</span></span><span class="price">${p?`<span class="num">${fmt(p.total)}</span> <span class="small muted">د.ع</span>`:''}</span>`;
+    lab.querySelector('input').addEventListener('change',()=>{CG.veh=v.id;renderCargo();});vo.appendChild(lab);});
+  $('#helpers').textContent=CG.helpers;
+  if(!routeD)return;
+  const p=cargoPrice(routeD.km,CG.veh),d=discountFor(p.total);
+  $('#cBreak').innerHTML=`<span>أجرة السيارة</span><span class="num">${fmt(p.trip)}</span><span>العمال (${CG.helpers})</span><span class="num">${fmt(p.helpers)}</span>${p.floors?`<span>رسوم الطوابق بدون مصعد</span><span class="num">${fmt(p.floors)}</span>`:''}${p.wrap?`<span>التغليف والحماية</span><span class="num">${fmt(p.wrap)}</span>`:''}${d?`<span>الخصم</span><span class="num neg ltr">−${fmt(d)}</span>`:''}<span class="tot">المجموع التقريبي</span><span class="tot num">${fmt(p.total-d)} د.ع</span>`;
+  $('#btnLabel').textContent=CG.when==='later'?'احجز النقل':'اطلب النقل هسه';$('#btnPrice').textContent=fmt(p.total-d);
+}
+function setService(svc){
+  if(step!=='plan')return;CG.svc=svc;$$('.svc button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.svc===svc));
+  const cg=svc==='cargo';$('#modeALbl').textContent=cg?'الاستلام':'من وين';$('#modeBLbl').textContent=cg?'التسليم':'إلى وين';
+  $('#searchTitle').textContent=cg?'ندوّر على أقرب سيارة حمل…':'ندوّر على أقرب كابتن…';
+  taxis.forEach((t,i)=>t.m.setIcon(cg?(i%2?truckIcon:taxiIcon(false)):taxiIcon(false)));
+  if(cg&&P.s)clearPoint('s');else{setMode(mode);updateRoute();}renderPoints();
+}
+$$('.svc button').forEach(b=>b.addEventListener('click',()=>setService(b.dataset.svc)));
+
+/* nearby taxis */
+const taxis=PLACES.slice(0,10).map((p,i)=>({m:L.marker([p.c[0]+Math.sin(i*7)*.006,p.c[1]+Math.cos(i*5)*.006],{icon:taxiIcon(false),interactive:false,keyboard:false}).addTo(map),h:Math.random()*6.28}));
+setInterval(()=>{if(reduce)return;taxis.forEach(t=>{if(!map.hasLayer(t.m))return;t.h+=(Math.random()-.5)*.8;const p=t.m.getLatLng();t.m.setLatLng([p.lat+Math.sin(t.h)*.0006,p.lng+Math.cos(t.h)*.0007]);});},1500);
+
+/* ================= ride flow ================= */
+let timers=[],raf=null,myCar=null,current=null,hiddenTaxi=null;
+function setStep(s){step=s;$$('#panel [data-step]').forEach(el=>el.hidden=el.dataset.step!==s);$('#drawer').hidden=true;}
+function along(coords,dur,onP,done){
+  const segs=[];let total=0;for(let i=1;i<coords.length;i++){const d=coords[i-1].distanceTo(coords[i]);segs.push(d);total+=d;}
+  const t0=performance.now();
+  (function f(now){const t=Math.min(1,(now-t0)/dur);let tg=total*t,i=0;while(i<segs.length-1&&tg>segs[i]){tg-=segs[i];i++;}
+    const a=coords[i],b=coords[i+1]||a,r=segs[i]?tg/segs[i]:0;myCar.setLatLng([a.lat+(b.lat-a.lat)*r,a.lng+(b.lng-a.lng)*r]);onP(t);
+    if(t<1)raf=requestAnimationFrame(f);else{raf=null;done();}})(t0);
+}
+$('#btnRequest').addEventListener('click',()=>{
+  if(!routeD)return;
+  let other=null;
+  if($('#forOther').checked){const n=$('#oName').value.trim(),ph=$('#oPhone').value.trim();
+    if(n.length<2){toast('اكتب اسم الشخص اللي رايح تطلبله');return;}
+    if(!/^\+?[\d\s]{10,16}$/.test(ph)){toast('اكتب رقم موبايله صح، مثال: +964 770 123 4567');return;}
+    other={name:n,phone:ph};}
+  let capKey;
+  if(CG.svc==='cargo'){
+    if(cargoVol()<=0){toast('اختار الأغراض اللي تريد تنقلها');return;}
+    const v=VEH.find(x=>x.id===CG.veh),p=cargoPrice(routeD.km,v.id);
+    current={svc:'cargo',from:P.a.name,to:P.b.name,km:routeD.km,min:routeD.min,fare:p.total,disc:discountFor(p.total),eta:v.eta,pay:S.pay,veh:v,items:itemsText(),helpers:CG.helpers};
+    capKey='cargo';
+  } else {
+    const t=TYPES.find(x=>x.id===S.type),f=fare(routeD.km,t.mult)+stopFee();
+    current={svc:'taxi',from:P.a.name,to:P.b.name,km:routeD.km,min:routeD.min,fare:f,disc:discountFor(f),eta:t.eta,type:t,pay:S.pay,stop:P.s?P.s.name:null};
+    capKey=$('#ladyPref').checked?'lady':'taxi';
+  }
+  current.other=other;current.cap=capKey;current.pin=String(Math.floor(1000+Math.random()*9000));
+  if(CG.when==='later'){const at=new Date($('#whenAt').value);if(isNaN(at)||at<new Date()){toast('اختار موعد بالمستقبل');return;}
+    const when=at.toLocaleString('ar-IQ',{weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'});
+    const what=capKey==='cargo'?current.veh.name:(capKey==='lady'?'تكسي ويه كابتنة':'تكسي');
+    $('#bookedTitle').textContent='حجزنالك '+what+' '+when;
+    $('#bookedSub').textContent=`${current.from} ← ${current.to}${current.items?' · '+current.items:''}${other?' · لـ '+other.name:''} · ${fmt(current.fare-current.disc)} د.ع. يوصلك إشعار باسم الكابتن قبل الموعد بساعة.`;
+    S.history.unshift({d:when,from:current.from,to:current.to,fare:current.fare-current.disc,km:current.km,rating:0,cap:capKey,svc:'محجوز · '+what+(current.items?' · '+current.items:'')});
+    setStep('booked');renderHistory();return;}
+  CAPTAIN=CAPS[capKey];fillCaptain();
+  if(S.favs.has(capKey)&&capKey!=='cargo')toast('دزّينا طلبك أول شي لكابتنك المفضل '+CAPTAIN.first);
+  setStep('search');
+  timers.push(setTimeout(startApproach,reduce?500:2400));
+});
+function startApproach(){
+  let start;
+  if(current.svc==='cargo'){hiddenTaxi=null;start=L.latLng(P.a.ll.lat+.011,P.a.ll.lng-.012);}
+  else{let best=taxis[0];taxis.forEach(x=>{if(x.m.getLatLng().distanceTo(P.a.ll)<best.m.getLatLng().distanceTo(P.a.ll))best=x;});hiddenTaxi=best;start=best.m.getLatLng();map.removeLayer(best.m);}
+  $('#liveCargo').hidden=current.svc!=='cargo';$('#liveCargo').innerHTML=current.svc==='cargo'?`<b>${esc(current.veh.name)}</b> · ${esc(current.items)} · ${current.helpers} عامل`:'';
+  myCar=L.marker(start,{icon:taxiIcon(true),interactive:false,zIndexOffset:1000}).addTo(map);
+  map.fitBounds(L.latLngBounds([start,P.a.ll,P.b.ll]),{padding:[50,50],maxZoom:16});
+  $('#tFrom').textContent=current.from;$('#tTo').textContent=current.to;$('#tFare').textContent=fmt(current.fare-current.disc)+' د.ع';
+  const cg=current.svc==='cargo';
+  $('#liveTitle').textContent=CAPTAIN.first+(cg?' بالطريق لموقع الاستلام':gx(' جايلك بالطريق'));setStep('live');
+  $('#pinCode').textContent=current.pin;
+  RCHAT.start('دردشة ويه '+(CAPTAIN.female?'الكابتنة ':'الكابتن ')+CAPTAIN.first,CAPTAIN.first,current.other?['وين صرت؟','أهلي ينتظرون كدام الباب','شكراً']:['وين صرت؟','آني واكف كدام الباب','دقيقتين وأطلع','عندي شنط']);
+  RCHAT.peerSay(gx(current.svc==='cargo'?'هلا، آني جايلك بالطريق. رتّب الأغراض كرب الباب.':'هلا، آني جايلك بالطريق. دقايق وأوصل.'),reduce?100:2500);
+  $('#pinNote').textContent=current.other?`انرسل لـ ${current.other.name} مسج بيه الرمز واسم الكابتن ورقم السيارة. يكول الرمز للكابتن حتى يبدي الرحلة.`:'كوله للكابتن حتى يبدي الرحلة. إذا ما طلبه منك، لا تصعد.';
+  $('#liveOther').hidden=!current.other;if(current.other)$('#liveOther').innerHTML=`الطلب لـ <b>${esc(current.other.name)}</b> · <span class="ltr num">${esc(current.other.phone)}</span>. تكدر تتابع الرحلة من هنا.`;
+  $('#greet').hidden=true;timers.push(setTimeout(()=>{$('#greetTxt').textContent=welcomeMsg(cg);$('#greet').hidden=false;},reduce?0:1000));
+  along([start,P.a.ll],reduce?800:6000,t=>{$('#liveBar').style.width=t*100+'%';$('#liveEta').textContent=Math.max(1,Math.ceil(current.eta*(1-t)))+' د';},()=>{
+    toast(cg?'وصل الكابتن، دا يحمّلون الأغراض':gx('الكابتن وصل! ')+(current.other?'خبّر '+current.other.name+' يطلع':'اطلع لا تتأخر'));
+    if(cg){$('#liveTitle').textContent='دا يحمّلون الأغراض…';$('#liveEta').textContent='تحميل';}
+    timers.push(setTimeout(()=>{$('#liveTitle').textContent=(cg?'بالطريق لموقع التسليم: ':'بالطريق إلى ')+current.to;
+      along(routeD.coords,reduce?1200:14000,t=>{$('#liveBar').style.width=t*100+'%';$('#liveEta').textContent=Math.max(1,Math.ceil(current.min*(1-t)))+' د';},showDone);},reduce?300:(cg?3000:1400)));
+  });
+}
+function endRide(){RCHAT.end();timers.forEach(clearTimeout);timers=[];if(raf)cancelAnimationFrame(raf);raf=null;
+  if(myCar){if(hiddenTaxi){hiddenTaxi.m.setLatLng(myCar.getLatLng());hiddenTaxi.m.addTo(map);}map.removeLayer(myCar);myCar=null;hiddenTaxi=null;}
+  $('#liveBar').style.width='0';}
+function cancelRide(){endRide();setStep('plan');toast('تم إلغاء الطلب');}
+$('#btnBooked').addEventListener('click',()=>{setStep('plan');toast('تكدر تشوف الحجز بـ رحلاتي');});
+$('#btnCancel').addEventListener('click',cancelRide);$('#btnCancel2').addEventListener('click',cancelRide);
+
+/* live actions (call / message / share / SOS) */
+function actionHTML(act){
+  if(act==='call'){const pn=current&&current.proxy||proxyNum();if(current)current.proxy=pn;return `<span>اتصل بـ ${esc(CAPTAIN.first)} عبر رقم هلا المؤقت:</span><b class="ltr num" style="user-select:all">${pn}</b><span class="small muted">الرقم يشتغل بس خلال الرحلة، ورقمك الحقيقي ما يبين للكابتن.</span><div class="row"><button type="button" data-copy="${pn}">نسخ الرقم</button></div>`;}
+  if(act==='msg')return `<span>أرسل رسالة سريعة للكابتن:</span><div class="row">${['آني واكف كدام الباب','دقيقتين وأطلع','وين صرت؟','آني لابس قميص أزرق'].map(m=>`<button type="button" data-msg="${m}">${m}</button>`).join('')}</div>`;
+  if(act==='share'){const txt=`آني ويه تطبيق هلا: الكابتن ${CAPTAIN.name}، ${CAPTAIN.car} ${CAPTAIN.color}، لوحة البصرة ${CAPTAIN.plateNo}. من ${current?current.from:'-'} إلى ${current?current.to:'-'}.`;
+    return `<span>انسخ تفاصيل الرحلة ودزّها لأهلك أو أصدقائك:</span><p class="small" style="user-select:all">${esc(txt)}</p><div class="row"><button type="button" data-copy="${esc(txt)}">نسخ التفاصيل</button></div>`;}
+  if(act==='sos')return `<b style="color:var(--bad)">أرقام الطوارئ بالعراق</b><span>الشرطة: <b class="num">104</b> · الإسعاف: <b class="num">122</b> · الدفاع المدني: <b class="num">115</b></span><span class="small muted">رقم الطوارئ المحفوظ بحسابك: <b class="ltr num">${esc(S.rider.emergency)}</b></span>`;
+}
+document.addEventListener('click',async e=>{
+  const oc=e.target.closest('[data-open-captain]');if(oc){if(oc.dataset.openCaptain){CAPTAIN=CAPS[oc.dataset.openCaptain];fillCaptain();}location.hash='captain';return;}
+  const a=e.target.closest('[data-act]');
+  if(a&&a.dataset.act==='msg'&&!a.closest('[data-view="captain"]')){$('#drawer').hidden=true;RCHAT.toggle();return;}
+  if(a){const drawer=a.closest('[data-view="captain"]')?$('#capDrawer'):$('#drawer');const same=!drawer.hidden&&drawer.dataset.act===a.dataset.act;
+    drawer.hidden=same;drawer.dataset.act=a.dataset.act;if(!same)drawer.innerHTML=actionHTML(a.dataset.act);return;}
+  const c=e.target.closest('[data-copy]');
+  if(c){try{await navigator.clipboard.writeText(c.dataset.copy);toast('تم النسخ');}catch(err){toast('ظلّل النص وانسخه يدوياً');}return;}
+  const m=e.target.closest('[data-msg]');
+  if(m){toast('انرسلت للكابتن: '+m.dataset.msg);$('#drawer').hidden=true;}
+});
+
+/* done */
+let rating=5,tip=0,praise=new Set(),acV='cold',splitN=1;
+$$('#acRate button').forEach(b=>b.addEventListener('click',()=>{acV=b.dataset.v;$$('#acRate button').forEach(x=>x.setAttribute('aria-pressed',x===b));}));
+function renderSplit(){$('#splitN').textContent=splitN;const tot=current?current.fare-current.disc+tip:0;$('#splitNote').hidden=splitN<2;$('#splitNote').textContent=`كل واحد يدفع ${fmt(Math.ceil(tot/splitN/250)*250)} د.ع. نرسل طلب دفع لـ ${splitN-1} من أصدقائك بعد ما تأكد.`;}
+$('#spMinus').addEventListener('click',()=>{splitN=Math.max(1,splitN-1);renderSplit();});
+$('#spPlus').addEventListener('click',()=>{splitN=Math.min(4,splitN+1);renderSplit();});
+function showDone(){endRide();rating=5;tip=0;praise=new Set();acV='cold';splitN=1;$$('#acRate button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v==='cold'));renderStars();renderTips();renderPraise();renderReceipt();renderSplit();$('#rErr').textContent='';setStep('done');}
+function renderStars(){const s=$('#stars');s.innerHTML='';for(let i=1;i<=5;i++){const b=document.createElement('button');b.type='button';b.className=i<=rating?'on':'';b.setAttribute('aria-label',i+' نجوم');
+  b.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';b.addEventListener('click',()=>{rating=i;renderStars();});s.appendChild(b);}}
+function renderPraise(){const w=$('#praise');w.innerHTML='';CAPTAIN.compliments.slice(0,4).forEach(c=>{const b=document.createElement('button');b.type='button';b.textContent=c.k;b.className=praise.has(c.k)?'on':'';
+  b.addEventListener('click',()=>{praise.has(c.k)?praise.delete(c.k):praise.add(c.k);renderPraise();});w.appendChild(b);});}
+function renderTips(){const w=$('#tips');w.innerHTML='';[0,1000,2000,5000].forEach(v=>{const b=document.createElement('button');b.type='button';b.textContent=v?fmt(v):'بدون';b.className=v===tip?'on':'';b.addEventListener('click',()=>{tip=v;renderTips();renderReceipt();renderSplit();});w.appendChild(b);});}
+function renderReceipt(){const m=S.methods.find(x=>x.id===current.pay);
+  $('#rSvc').textContent=current.svc==='cargo'?`نقل · ${current.veh.name} · ${current.items}`:'تكسي · '+current.type.name+(current.stop?' · وقفة: '+current.stop:'');
+  $('#ptsNote').textContent='راح تاخذ '+fmt(Math.floor((current.fare-current.disc+tip)/100))+' نقطة هلا على هالرحلة';
+  $('#rFare').textContent=fmt(current.fare)+' د.ع';$('#rDisc').textContent=current.disc?'−'+fmt(current.disc)+' د.ع':'لا يوجد';$('#rTip').textContent=fmt(tip)+' د.ع';
+  $('#rPay').textContent=m?m.label:'نقداً';$('#rTotal').textContent=fmt(current.fare-current.disc+tip)+' د.ع';}
+$('#btnFinish').addEventListener('click',()=>{
+  const total=current.fare-current.disc+tip;
+  if(current.pay==='wallet'){if(S.balance<total){$('#rErr').textContent=`رصيد المحفظة (${fmt(S.balance)} د.ع) ما يكفي، غيّرنا الدفع إلى نقداً.`;current.pay='cash';renderReceipt();return;}S.balance-=total;}
+  if(current.pay!=='cash')S.tx.unshift({d:today(),t:`${current.svc==='cargo'?'نقل':'رحلة'}: ${current.from} ← ${current.to}`,a:-total});
+  S.saving+=current.disc;
+  S.history.unshift({d:today()+' · الآن',from:current.from,to:current.to,fare:total,km:current.km,rating,cap:current.cap,svc:current.svc==='cargo'?'نقل · '+current.veh.name+' · '+current.items:(current.other?'لـ '+current.other.name:'')});
+  const pts=Math.floor(total/100);S.points+=pts;
+  CAPTAIN.ac=Math.max(50,Math.min(100,(CAPTAIN.ac||90)+(acV==='cold'?0:acV==='hot'?-2:-1)));
+  if(splitN>1)setTimeout(()=>toast(`انرسل طلب دفع لـ ${splitN-1} أصدقاء، كل واحد ${fmt(Math.ceil(total/splitN/250)*250)} د.ع`),2700);
+  CAPTAIN.trips++;CAPTAIN.ratings++;CAPTAIN.dist[rating]++;praise.forEach(k=>{const c=CAPTAIN.compliments.find(x=>x.k===k);if(c)c.n++;});
+  toast(gx('شكراً! تقييمك وصل للكابتن ')+CAPTAIN.first+' · +'+fmt(pts)+' نقطة');
+  S.promo=null;$('#promo').value='';$('#promoNote').hidden=true;
+  $('#forOther').checked=false;$('#otherBox').hidden=true;
+  setStep('plan');if(P.s)clearPoint('s');clearPoint('b');renderAll();
+});
+
+/* map buttons */
+let meMarker=null;
+$('#fabLocate').addEventListener('click',()=>{
+  if(!navigator.geolocation){toast('المتصفح ما يدعم تحديد الموقع');return;}
+  toast('جاري تحديد موقعك…');
+  navigator.geolocation.getCurrentPosition(pos=>{const ll=L.latLng(pos.coords.latitude,pos.coords.longitude);
+    if(!map.options.maxBounds.contains(ll)){toast('موقعك خارج البصرة. الخدمة حالياً داخل البصرة فقط');return;}
+    if(!meMarker)meMarker=L.marker(ll,{icon:L.divIcon({className:'',html:'<div class="me"></div>',iconSize:[18,18],iconAnchor:[9,9]}),interactive:false}).addTo(map);else meMarker.setLatLng(ll);
+    map.flyTo(ll,16,{duration:reduce?0:.8});setPoint('a',ll);
+  },()=>toast('ما كدرنا نحدد موقعك. اسمح للمتصفح باستخدام الموقع.'),{enableHighAccuracy:true,timeout:10000});
+});
+$('#fabFit').addEventListener('click',()=>{if(routeLine)map.fitBounds(routeLine.getBounds(),{padding:[50,50],maxZoom:16});else map.flyTo(CENTER,13,{duration:reduce?0:.8});});
+
+/* ================= trips ================= */
+function renderHistory(){
+  $('#history').innerHTML=S.history.map(h=>{const cap=CAPS[h.cap||'taxi'];return `<li><button type="button" class="cap-photo sm" data-open-captain="${cap.key}" title="ملف الكابتن ${esc(cap.name)}" style="border:0;cursor:pointer;padding:0">${photoHTML(cap)}</button><span class="grow"><b>${esc(h.from)} ← ${esc(h.to)}</b>${h.svc?`<br><span class="small" style="color:var(--accent-strong)">${esc(h.svc)}</span>`:''}<br><span class="small muted"><span class="num">${esc(h.d)}</span> · <span class="num">${h.km.toFixed(1)}</span> كم · الكابتن ${esc(cap.first)}${h.rating?` · <span class="stars-row">${'★'.repeat(h.rating)}</span>`:''}</span></span><b class="num">${fmt(h.fare)}</b></li>`;}).join('');
+}
+
+/* ================= wallet ================= */
+function renderWallet(){$('#walletBal').textContent=fmt(S.balance);const w=$('#topups');w.innerHTML='';
+  [10000,25000,50000].forEach(v=>{const b=document.createElement('button');b.className='btn';b.type='button';b.innerHTML=`+ <span class="num">${fmt(v)}</span>`;
+    b.addEventListener('click',()=>{S.balance+=v;S.tx.unshift({d:today(),t:'شحن المحفظة',a:v});renderAll();toast(`تم شحن ${fmt(v)} د.ع`);});w.appendChild(b);});}
+function renderMethods(){const w=$('#methods');w.innerHTML='';
+  S.methods.forEach(m=>{const l=document.createElement('label');l.className='method';
+    l.innerHTML=`<input type="radio" name="pm" value="${m.id}" ${S.pay===m.id?'checked':''}><span class="grow"><b>${esc(m.label)}</b><br><span class="small muted">${m.id==='wallet'?'الرصيد: '+fmt(S.balance)+' د.ع':esc(m.sub)}</span></span>${S.pay===m.id?'<span class="chip chip-accent">افتراضي</span>':''}`;
+    l.querySelector('input').addEventListener('change',()=>{S.pay=m.id;renderMethods();renderRidePay();toast('طريقة الدفع صارت: '+m.label);});w.appendChild(l);});}
+function renderTx(){$('#txBody').innerHTML=S.tx.slice(0,8).map(x=>`<tr><td class="num">${x.d}</td><td>${esc(x.t)}</td><td class="num ${x.a>0?'amt-in':'amt-out'}">${x.a>0?'+':'−'}${fmt(Math.abs(x.a))}</td></tr>`).join('');}
+const ccNum=$('#ccNum'),ccName=$('#ccName'),ccExp=$('#ccExp'),ccCvv=$('#ccCvv');
+ccNum.addEventListener('input',()=>{const d=ccNum.value.replace(/\D/g,'').slice(0,16);ccNum.value=d.replace(/(.{4})/g,'$1 ').trim();$('#ccNumView').textContent=(d+'•'.repeat(16-d.length)).replace(/(.{4})/g,'$1 ').trim();$('#ccBrand').textContent=d[0]==='4'?'VISA':d[0]==='5'?'MASTERCARD':'CARD';});
+ccName.addEventListener('input',()=>{$('#ccNameView').textContent=ccName.value.trim()||'YOUR NAME';});
+ccExp.addEventListener('input',()=>{let d=ccExp.value.replace(/\D/g,'').slice(0,4);if(d.length>2)d=d.slice(0,2)+'/'+d.slice(2);ccExp.value=d;$('#ccExpView').textContent=d||'MM/YY';});
+ccCvv.addEventListener('input',()=>{ccCvv.value=ccCvv.value.replace(/\D/g,'').slice(0,4);});
+function luhn(n){let s=0,alt=false;for(let i=n.length-1;i>=0;i--){let d=+n[i];if(alt){d*=2;if(d>9)d-=9;}s+=d;alt=!alt;}return s%10===0;}
+$('#cardForm').addEventListener('submit',e=>{e.preventDefault();let ok=true;const n=ccNum.value.replace(/\s/g,'');const set=(id,m)=>{$(id).textContent=m;if(m)ok=false;};
+  set('#eNum',n.length<16?'رقم البطاقة لازم يكون 16 رقم.':!luhn(n)?'رقم البطاقة غير صحيح، تأكد من الأرقام.':'');
+  set('#eName',ccName.value.trim().length<3?'اكتب الاسم كما هو مطبوع على البطاقة.':'');
+  const m=ccExp.value.match(/^(\d{2})\/(\d{2})$/);let ee='';if(!m||+m[1]<1||+m[1]>12)ee='اكتب التاريخ بصيغة MM/YY.';else{const now=new Date(),y=2000+ +m[2];if(y<now.getFullYear()||(y===now.getFullYear()&&+m[1]<now.getMonth()+1))ee='البطاقة منتهية الصلاحية.';}
+  set('#eExp',ee);set('#eCvv',ccCvv.value.length<3?'رمز CVV من 3 أو 4 أرقام.':'');if(!ok)return;
+  const brand=n[0]==='4'?'Visa':n[0]==='5'?'Mastercard':'بطاقة',last=n.slice(-4),id='card'+last+Date.now();
+  S.methods.push({id,label:`${brand} •••• ${last}`,sub:'تنتهي '+ccExp.value});S.pay=id;e.target.reset();
+  $('#ccNumView').textContent='•••• •••• •••• ••••';$('#ccNameView').textContent='YOUR NAME';$('#ccExpView').textContent='MM/YY';$('#ccBrand').textContent='CARD';
+  renderAll();toast('تمت إضافة البطاقة وصارت طريقة الدفع الافتراضية');});
+
+/* ================= account ================= */
+const initials=n=>n.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join(' ');
+function renderPoints2(){$('#ptsVal').textContent=fmt(S.points);$('#ptsBar').style.width=Math.min(100,S.points%1000/10)+'%';
+  $('#ptsRedeem').disabled=S.points<1000;$('#ptsHint').textContent=S.points>=1000?'تكدر تبدل نقاطك هسه، الرصيد ينضاف لمحفظتك.':`باقيلك ${fmt(1000-S.points%1000)} نقطة على 10,000 د.ع بالمحفظة.`;
+  $('#favList').innerHTML=[...S.favs].map(k=>{const c=CAPS[k];return `<li><button type="button" class="cap-photo sm" data-open-captain="${k}" style="border:0;padding:0;cursor:pointer">${photoHTML(c)}</button><span class="grow"><b>${esc(c.name)}</b><br><span class="small muted">★ ${c.rating.toFixed(2)} · ${esc(c.car)}</span></span><button class="btn btn-ghost small" type="button" data-unfav="${k}">إزالة</button></li>`;}).join('')||'<li class="muted small">ما عندك كباتن مفضلين. افتح ملف أي كابتن واضغط «أضف للمفضلين».</li>';
+  $$('#favList [data-unfav]').forEach(b=>b.addEventListener('click',()=>{S.favs.delete(b.dataset.unfav);renderPoints2();toast('انشال من المفضلين');}));}
+$('#ptsRedeem').addEventListener('click',()=>{if(S.points<1000)return;S.points-=1000;S.balance+=10000;S.tx.unshift({d:today(),t:'تبديل 1,000 نقطة هلا',a:10000});renderAll();toast('انضافت 10,000 د.ع لمحفظتك');});
+$('#favBtn').addEventListener('click',()=>{const k=CAPTAIN.key;if(S.favs.has(k)){S.favs.delete(k);toast('انشال من المفضلين');}else{S.favs.add(k);toast(gx('انضاف للمفضلين. طلباتك توصل للكابتن ')+CAPTAIN.first+' أول إذا قريب منك');}fillCaptain();renderPoints2();});
+function renderRider(){const r=S.rider;renderPoints2();
+  $('#riderNameView').textContent=r.name;$('#riderPhoneView').textContent=r.phone;$('#riderAvatar').textContent=initials(r.name);$('#topAvatar').textContent=initials(r.name);
+  $('#rName').value=r.name;$('#rPhone').value=r.phone;$('#rEmail').value=r.email;$('#rEmergency').value=r.emergency;$('#rAge').value=r.age||'';$('#rTitle').value=r.title||'none';
+  $('#rsTrips').textContent=40+S.history.length;$('#rsSpent').textContent=fmt(312000+S.history.reduce((s,h)=>s+h.fare,0));$('#rsSaved').textContent=fmt(S.saving);
+  $('#savedPlaces').innerHTML=S.saved.map(s=>`<li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><span class="grow"><b>${esc(s.k)}</b><br><span class="small muted">${esc(s.p)}، البصرة</span></span><button class="btn btn-ghost small" type="button" data-go="${esc(s.p)}" data-k="${esc(s.k)}">روح هناك</button></li>`).join('');
+  $$('#savedPlaces [data-go]').forEach(b=>b.addEventListener('click',()=>{const p=placeBy(b.dataset.go);location.hash='ride';setTimeout(()=>setPoint('b',L.latLng(p.c),b.dataset.k+' · '+p.n),80);}));}
+$('#riderForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#rName').value.trim(),phone=$('#rPhone').value.trim(),email=$('#rEmail').value.trim();
+  if(name.length<3){$('#rErrForm').textContent='اكتب اسمك الكامل (3 أحرف على الأقل).';return;}
+  if(!/^\+?[\d\s]{10,16}$/.test(phone)){$('#rErrForm').textContent='رقم الهاتف غير صحيح، مثال: +964 770 123 4567';return;}
+  if(email&&!/^\S+@\S+\.\S+$/.test(email)){$('#rErrForm').textContent='البريد الإلكتروني غير صحيح.';return;}
+  $('#rErrForm').textContent='';const age=parseInt($('#rAge').value,10);if($('#rAge').value&&(!(age>=12&&age<=100))){$('#rErrForm').textContent='اكتب العمر بالأرقام، مثلاً 34.';return;}
+  Object.assign(S.rider,{name,phone,email,emergency:$('#rEmergency').value.trim(),age:age||null,title:$('#rTitle').value});renderRider();toast('تم حفظ بياناتك');});
+$('#btnInvite').addEventListener('click',async()=>{try{await navigator.clipboard.writeText('HALA-MUSTAFA');toast('تم نسخ كود الدعوة');}catch(e){toast('كود الدعوة: HALA-MUSTAFA');}});
+$('#btnSupport').addEventListener('click',()=>{location.hash='support';});
+
+/* ================= captain app ================= */
+const COMM=0.15;
+const RIDERS=[{n:'علي حسين',r:4.8,ph:'+964 770 412 8890'},{n:'زينب كاظم',r:4.9,ph:'+964 780 233 1047'},{n:'حسن جاسم',r:4.7,ph:'+964 771 600 5521'},{n:'نور عبد الله',r:5.0,ph:'+964 772 918 3302'},{n:'مرتضى سالم',r:4.6,ph:'+964 750 341 7719'}];
+const ZONES=[{n:'العشار',m:1.3},{n:'ساحة سعد',m:1.2},{n:'الجزائر',m:1.2}];
+const C={online:false,step:'offline',gross:52000,tips:3000,bonus:0,trips:7,mins:330,goal:12,goalBonus:10000,cash:28000,balance:18500,
+  week:[42,55,38,61,70,84,0],
+  list:[{t:'7:10 م',r:'المعقل ← الجبيلة',f:6500,p:'نقداً',who:'حسن',rt:5},{t:'5:45 م',r:'التنومة ← العشار',f:7000,p:'محفظة هلا',who:'زينب',rt:5},{t:'4:20 م',r:'الجزائر ← الحيانية',f:7500,p:'نقداً',who:'مرتضى',rt:4}],
+  payouts:[{d:'05/11',a:120000,to:'زين كاش'},{d:'29/10',a:145000,to:'مصرف الرافدين'}],
+  nav:'google'};
+const netOf=g=>Math.round(g*(1-COMM));
+let cmap=null,capMarker=null,capPos=L.latLng(30.5105,47.8250),cJob=null,cLine=null,cPinA=null,cPinB=null,cTimers=[],cTick=null,cWaitT=null,cStarsV=5,onlineSince=null;
+function initCapMap(){
+  if(cmap) return;
+  cmap=L.map('capMap',{maxBounds:L.latLngBounds([30.15,47.35],[30.85,48.25]),minZoom:10,maxZoom:19}).setView(capPos,14);
+  baseMap(cmap,null);drawArea(cmap);
+  ZONES.forEach(z=>{const p=placeBy(z.n);L.circle(p.c,{radius:450,color:'#F2B705',weight:1,fillColor:'#F2B705',fillOpacity:.14}).addTo(cmap)
+    .bindTooltip(`طلب عالي ×${z.m}`,{permanent:true,direction:'center',className:'zone-lbl'});});
+  capMarker=L.marker(capPos,{icon:taxiIcon(true,CAPS.taxi),zIndexOffset:1000,interactive:false}).addTo(cmap);
+}
+async function getRoute(a,b){
+  try{const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`);
+    const j=await r.json();if(j.code!=='Ok')throw 0;const rt=j.routes[0];
+    return {coords:rt.geometry.coordinates.map(c=>L.latLng(c[1],c[0])),km:rt.distance/1000,min:Math.max(2,Math.round(rt.duration/60*1.25))};
+  }catch(e){const km=a.distanceTo(b)/1000*1.3;return {coords:[a,b],km,min:Math.max(2,Math.round(km/28*60))};}
+}
+let cRaf=null;
+function capAlong(coords,dur,onP,done){
+  const segs=[];let total=0;for(let i=1;i<coords.length;i++){const d=coords[i-1].distanceTo(coords[i]);segs.push(d);total+=d;}
+  const t0=performance.now();
+  (function f(now){const t=Math.min(1,(now-t0)/dur);let tg=total*t,i=0;while(i<segs.length-1&&tg>segs[i]){tg-=segs[i];i++;}
+    const a=coords[i],b=coords[i+1]||a,r=segs[i]?tg/segs[i]:0;capPos=L.latLng(a.lat+(b.lat-a.lat)*r,a.lng+(b.lng-a.lng)*r);capMarker.setLatLng(capPos);onP(t);
+    if(t<1)cRaf=requestAnimationFrame(f);else{cRaf=null;done();}})(t0);
+}
+const STATUS={offline:'غير متصل',idle:'متصل · بانتظار طلب',request:'طلب جديد!',pickup:'بالطريق للزبون',waiting:'بانتظار الزبون',trip:'برحلة',collect:'إنهاء الرحلة'};
+function setCStep(st){C.step=st;if(!['pickup','waiting','trip'].includes(st))CCHAT.end();$$('[data-cstep]').forEach(el=>el.hidden=el.dataset.cstep!==st);
+  const ch=$('#cStatus');ch.textContent=STATUS[st];ch.classList.toggle('on',st!=='offline');$('#cOnline').checked=st!=='offline';$('#cDrawer').hidden=true;}
+function clearC(){cTimers.forEach(clearTimeout);cTimers=[];clearInterval(cTick);clearInterval(cWaitT);if(cRaf)cancelAnimationFrame(cRaf);cRaf=null;}
+function clearJobMap(){[cLine,cPinA,cPinB].forEach(l=>l&&cmap.removeLayer(l));cLine=cPinA=cPinB=null;$('#navExt').hidden=true;}
+function goOnline(){initCapMap();C.online=true;onlineSince=onlineSince||Date.now();setCStep('idle');scheduleCReq();toast('بدأ دوامك، الله وياك');}
+function goOffline(){if(['pickup','waiting','trip','collect'].includes(C.step)){toast('كمّل الرحلة الحالية أول');$('#cOnline').checked=true;return;}
+  clearC();C.online=false;if(cmap)clearJobMap();cJob=null;setCStep('offline');toast('انتهى الدوام');}
+$('#cGo').addEventListener('click',goOnline);
+$('#cOnline').addEventListener('change',e=>e.target.checked?goOnline():goOffline());
+function scheduleCReq(){cTimers.push(setTimeout(()=>{if(C.step!=='idle')return;if(location.hash!=='#cap-home'){scheduleCReq();return;}showCReq();},reduce?600:3500));}
+const firstName=n=>{const p=String(n).trim().split(/\s+/);return p[0]+(p[1]?' '+p[1][0]+'.':'');};
+function riderRow(j,pre){return `<span class="rider-av">${esc(j.rider.n[0])}</span><span class="grow" style="flex:1;min-width:0"><b>${esc(firstName(j.rider.n))}</b> <span class="stars-row small">★</span> <b class="small num">${j.rider.r.toFixed(1)}</b><br><span class="small muted">${esc(j.pay)}</span></span>`;}
+function showCReq(){
+  const cashOk=$('#cCashOk').checked;
+  const homeOn=$('#cHome').checked,home=placeBy($('#cHomeSel').value);
+  let a=PLACES[Math.floor(Math.random()*9)],b;
+  if(homeOn){const near=PLACES.filter(p=>p!==home&&L.latLng(p.c).distanceTo(capPos)<4000);a=near.length?near[Math.floor(Math.random()*near.length)]:PLACES.find(p=>p!==home);b=home;}
+  else{do{b=PLACES[Math.floor(Math.random()*11)];}while(b===a);}
+  const zone=ZONES.find(z=>z.n===a.n),mult=zone?zone.m:1;
+  const km=L.latLng(a.c).distanceTo(L.latLng(b.c))/1000*1.3,f=Math.round(fare(km,1)*mult/250)*250;
+  const pays=cashOk?['نقداً','نقداً','محفظة هلا','بطاقة']:['محفظة هلا','بطاقة'];
+  cJob={rider:RIDERS[Math.floor(Math.random()*RIDERS.length)],a,b,km,fare:f,mult,pay:pays[Math.floor(Math.random()*pays.length)],pickKm:capPos.distanceTo(L.latLng(a.c))/1000,home:homeOn,pin:String(Math.floor(1000+Math.random()*9000))};
+  cPinA=L.marker(a.c,{icon:pinIcon('a')}).addTo(cmap);cPinB=L.marker(b.c,{icon:pinIcon('b')}).addTo(cmap);
+  cmap.fitBounds(L.latLngBounds([capPos,L.latLng(a.c),L.latLng(b.c)]),{padding:[50,50],maxZoom:15});
+  let left=15;
+  $('#cReq').innerHTML=`<div class="req-card" role="alert">
+    <div class="row between"><div><span class="small muted">طلب رحلة${cJob.home?' · <b style="color:var(--ok)">على طريقك للبيت</b>':''}${mult>1?` · <b style="color:var(--accent-strong)">طلب عالي ×${mult}</b>`:''}</span><div class="req-fare"><span class="num">${fmt(f)}</span> <span style="font-size:1rem">د.ع</span></div><span class="small">صافي لك: <b class="num">${fmt(netOf(f))}</b> د.ع</span></div><div class="ring" id="cRing"><b class="num" id="cLeft">15</b></div></div>
+    <div class="rider-row">${riderRow(cJob,true)}</div>
+    <div class="points" style="background:var(--surface)"><span class="dot-a"></span><span class="val">${esc(a.n)} <span class="small muted">· يبعد <span class="num">${cJob.pickKm.toFixed(1)}</span> كم</span></span><span></span><span class="dot-b"></span><span class="val">${esc(b.n)} <span class="small muted">· <span class="num">${km.toFixed(1)}</span> كم</span></span><span></span></div>
+    <div class="grid-2"><button class="btn" id="cNo" type="button">رفض</button><button class="btn btn-primary" id="cYes" type="button">قبول</button></div></div>`;
+  setCStep('request');
+  cTick=setInterval(()=>{left--;const el=$('#cLeft');if(el){el.textContent=left;$('#cRing').style.setProperty('--p',left/15*100);}if(left<=0)declineC(true);},1000);
+  $('#cNo').addEventListener('click',()=>declineC(false));$('#cYes').addEventListener('click',acceptC);
+}
+function declineC(expired){clearInterval(cTick);clearJobMap();cJob=null;setCStep('idle');toast(expired?'انتهى وقت الطلب':'رفضت الطلب');scheduleCReq();}
+function navLink(ll){return C.nav==='waze'?`https://waze.com/ul?ll=${ll.lat},${ll.lng}&navigate=yes`:`https://www.google.com/maps/dir/?api=1&destination=${ll.lat},${ll.lng}`;}
+async function acceptC(){
+  clearInterval(cTick);setCStep('pickup');
+  CCHAT.start('دردشة ويه '+firstName(cJob.rider.n),firstName(cJob.rider.n),['جايلك بالطريق','الزحمة شوية، دقايق وأوصل','وصلت، آني كدام الباب','ما لكيت المكان، وين بالضبط؟']);
+  CCHAT.peerSay('هلا كابتن، آني واكف كدام الباب.',reduce?100:3000);
+  $('#cRider1').innerHTML=riderRow(cJob);$('#cPickName').textContent=cJob.a.n;$('#cArrived').disabled=true;$('#cPickBar').style.width='0';
+  const A=L.latLng(cJob.a.c);const rt=await getRoute(capPos,A);if(C.step!=='pickup')return;
+  cLine=L.polyline(rt.coords,{color:'#12343B',weight:5,dashArray:'6 8'}).addTo(cmap);cmap.fitBounds(cLine.getBounds(),{padding:[50,50],maxZoom:16});
+  const ne=$('#navExt');ne.href=navLink(A);ne.textContent=`افتح الطريق بـ ${C.nav==='waze'?'Waze':'خرائط Google'} ↗`;ne.hidden=false;
+  const eta=Math.max(1,rt.min);
+  capAlong(rt.coords,reduce?800:6000,t=>{$('#cPickBar').style.width=t*100+'%';$('#cPickEta').textContent=Math.max(1,Math.ceil(eta*(1-t)))+' د';},()=>{
+    $('#cArrived').disabled=false;$('#cPickEta').textContent='وصلت';toast('وصلت لموقع الزبون');});
+}
+$('#cArrived').addEventListener('click',()=>{
+  setCStep('waiting');$('#cRider2').innerHTML=riderRow(cJob);toast('أخبرنا '+firstName(cJob.rider.n)+' إنك وصلت');
+  let sec=0;$('#cWait').textContent='0:00';cWaitT=setInterval(()=>{sec++;$('#cWait').textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');},1000);
+  cJob.waitStart=Date.now();$('#cPin').value='';$('#cPinHint').textContent=cJob.pin;
+});
+$('#cNoShow').addEventListener('click',()=>{clearC();clearJobMap();C.gross+=2000;C.balance+=netOf(2000);cJob=null;setCStep('idle');renderCap();toast('انلغت الرحلة وانحسبت لك رسوم انتظار 2,000 د.ع');scheduleCReq();});
+$('#cCancel').addEventListener('click',()=>{clearC();clearJobMap();cJob=null;setCStep('idle');toast('ألغيت الرحلة. الإلغاء المتكرر يقلل نسبة القبول');scheduleCReq();});
+$('#cStart').addEventListener('click',async()=>{
+  if($('#cPin').value.trim()!==cJob.pin){toast('رمز الأمان غلط. اطلبه من الزبون، وإذا ما يعرفه اتصل بالدعم');$('#cPin').focus();return;}
+  clearInterval(cWaitT);const waitedMin=(Date.now()-cJob.waitStart)/60000;cJob.waitFee=waitedMin>3?Math.round((waitedMin-3))*250:0;
+  setCStep('trip');if(cLine)cmap.removeLayer(cLine);if(cPinA){cmap.removeLayer(cPinA);cPinA=null;}
+  $('#cDropName').textContent=cJob.b.n;$('#cTripRider').textContent=firstName(cJob.rider.n);$('#cTripPay').textContent=cJob.pay;$('#cTripFare').textContent=fmt(cJob.fare)+' د.ع';$('#cEnd').disabled=true;$('#cTripBar').style.width='0';
+  const B=L.latLng(cJob.b.c);const rt=await getRoute(capPos,B);if(C.step!=='trip')return;
+  cLine=L.polyline(rt.coords,{color:'#D99A00',weight:6}).addTo(cmap);cmap.fitBounds(cLine.getBounds(),{padding:[50,50],maxZoom:16});
+  const ne=$('#navExt');ne.href=navLink(B);ne.hidden=false;
+  capAlong(rt.coords,reduce?1000:12000,t=>{$('#cTripBar').style.width=t*100+'%';$('#cTripEta').textContent=Math.max(1,Math.ceil(rt.min*(1-t)))+' د';},()=>{$('#cEnd').disabled=false;$('#cTripEta').textContent='وصلت';toast('وصلت للوجهة');});
+});
+$('#cEnd').addEventListener('click',()=>{
+  clearJobMap();const j=cJob;j.tip=Math.random()<.4?1000:0;const total=j.fare+(j.waitFee||0);
+  const comm=Math.round(total*COMM/250)*250,net=total-comm+j.tip;
+  $('#cCollectBox').innerHTML=(j.pay==='نقداً'?`<div class="req-card" style="text-align:center"><span>استلم من الزبون نقداً</span><div class="req-fare"><span class="num">${fmt(total)}</span> <span style="font-size:1rem">د.ع</span></div></div>`:`<div class="card" style="text-align:center;background:var(--ok-soft);border-color:transparent"><b style="color:var(--ok)">انخصم المبلغ من ${esc(j.pay)} الزبون</b><br><span class="small">لا تستلم كاش</span></div>`)+
+    `<div class="breakdown"><span>الأجرة</span><span class="num">${fmt(j.fare)}</span>${j.waitFee?`<span>رسوم الانتظار</span><span class="num">${fmt(j.waitFee)}</span>`:''}<span>عمولة هلا (15%)</span><span class="num neg ltr">−${fmt(comm)}</span>${j.tip?`<span>إكرامية من الزبون</span><span class="num ltr" style="color:var(--ok)">+${fmt(j.tip)}</span>`:''}<span class="tot">صافي ربحك</span><span class="tot num">${fmt(net)} د.ع</span></div>`;
+  j.total=total;j.comm=comm;j.net=net;cStarsV=5;renderCStars();
+  $('#cDone').textContent=j.pay==='نقداً'?'استلمت المبلغ، كمّل':'تم، كمّل';setCStep('collect');
+});
+function renderCStars(){const s=$('#cStars');s.innerHTML='';for(let i=1;i<=5;i++){const b=document.createElement('button');b.type='button';b.className=i<=cStarsV?'on':'';b.setAttribute('aria-label',i+' نجوم');
+  b.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';b.addEventListener('click',()=>{cStarsV=i;renderCStars();});s.appendChild(b);}}
+$('#cDone').addEventListener('click',()=>{
+  const j=cJob,d=new Date();
+  C.gross+=j.total;C.tips+=j.tip;C.trips++;CAPTAIN.trips++;C.km+=j.km+j.pickKm;$('#fKm').value='';
+  if(j.pay==='نقداً'){C.cash+=j.total;C.balance-=j.comm;C.balance+=j.tip;}else C.balance+=j.net;
+  let bonusMsg='';if(C.trips===C.goal){C.bonus+=C.goalBonus;C.balance+=C.goalBonus;bonusMsg=' · حققت هدف اليوم وانضافت مكافأة '+fmt(C.goalBonus)+' د.ع!';}
+  C.list.unshift({t:(d.getHours()%12||12)+':'+String(d.getMinutes()).padStart(2,'0')+(d.getHours()<12?' ص':' م'),r:`${j.a.n} ← ${j.b.n}`,f:j.total,p:j.pay,who:j.rider.n.split(' ')[0],rt:cStarsV});
+  cJob=null;setCStep('idle');renderCap();fillCaptain();toast('انضاف '+fmt(j.net)+' د.ع لأرباحك'+bonusMsg);scheduleCReq();
+});
+document.addEventListener('click',async e=>{
+  const a=e.target.closest('[data-cact]');if(!a||!cJob)return;if(a.dataset.cact==='msg'){$('#cDrawer').hidden=true;CCHAT.toggle();return;}const dr=$('#cDrawer');const same=!dr.hidden&&dr.dataset.act===a.dataset.cact;dr.hidden=same;dr.dataset.act=a.dataset.cact;if(same)return;
+  if(a.dataset.cact==='call'){cJob.proxy=cJob.proxy||proxyNum();dr.innerHTML=`<span>اتصل بـ ${esc(firstName(cJob.rider.n))} عبر رقم هلا المؤقت:</span><b class="ltr num" style="user-select:all">${cJob.proxy}</b><span class="small muted">رقم الزبون الحقيقي ما يبين، والرقم المؤقت يوكف من تخلص الرحلة.</span><div class="row"><button type="button" data-copy="${cJob.proxy}">نسخ الرقم</button></div>`;}
+  if(a.dataset.cact==='msg')dr.innerHTML=`<span>رسالة سريعة للزبون:</span><div class="row">${['جايلك بالطريق','الزحمة شوية، دقايق وأوصل','وصلت، آني كدام الباب','ما لكيت المكان، تكدر تتصل؟'].map(m=>`<button type="button" data-msg="${m}">${m}</button>`).join('')}</div>`;
+  if(a.dataset.cact==='sos')dr.innerHTML=`<b style="color:var(--bad)">أرقام الطوارئ بالعراق</b><span>الشرطة: <b class="num">104</b> · الإسعاف: <b class="num">122</b> · الدفاع المدني: <b class="num">115</b></span><span class="small muted">دعم الكباتن: <b class="ltr num">+964 780 000 4253</b></span>`;
+});
+$('#capFit').addEventListener('click',()=>{if(cmap)cmap.flyTo(capPos,15,{duration:reduce?0:.6});});
+$$('#cNavPref button').forEach(b=>b.addEventListener('click',()=>{C.nav=b.dataset.v;$$('#cNavPref button').forEach(x=>x.setAttribute('aria-pressed',x===b));toast('تطبيق الملاحة صار '+b.textContent);}));
+const DAYS=['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+function renderChart(){const c=$('#chart'),W=420,H=220,L0=34,R=8,T=16,B=30,max=100,bw=(W-L0-R)/7;const wk=C.week.slice();wk[6]=Math.round(todayNet()/1000);let h='';
+  [0,25,50,75,100].forEach(v=>{const y=T+(H-T-B)*(1-v/max);h+=`<line class="grid" x1="${L0}" x2="${W-R}" y1="${y}" y2="${y}"/><text x="${L0-6}" y="${y+4}" text-anchor="end">${v}</text>`;});
+  wk.forEach((v,i)=>{const x=W-R-(i+1)*bw+bw*.18,w=bw*.64,bh=(H-T-B)*Math.min(v,max)/max,y=H-B-bh;h+=`<rect class="bar ${i===6?'today':''}" x="${x}" y="${y}" width="${w}" height="${bh}" rx="4"/><text class="val" x="${x+w/2}" y="${y-4}" text-anchor="middle">${v}</text><text x="${x+w/2}" y="${H-10}" text-anchor="middle">${i===6?'اليوم':DAYS[i]}</text>`;});
+  c.innerHTML=h;}
+const todayComm=()=>Math.round(C.gross*COMM/250)*250;
+const todayNet=()=>C.gross-todayComm()+C.tips+C.bonus;
+function renderCap(){
+  $('#cmEarn').textContent=fmt(todayNet());$('#cmTrips').textContent=C.trips;
+  const mins=C.mins+(onlineSince?Math.floor((Date.now()-onlineSince)/60000):0);$('#cmHours').textContent=(mins/60).toFixed(1);
+  $('#cGoalTxt').textContent=`${Math.min(C.trips,C.goal)} / ${C.goal}`;$('#cGoalBonus').textContent=fmt(C.goalBonus);$('#cGoalBar').style.width=Math.min(100,C.trips/C.goal*100)+'%';
+  $('#ctList').innerHTML=C.list.map(t=>`<li><span class="rider-av">${esc(t.who[0])}</span><span class="grow"><b>${esc(t.r)}</b><br><span class="small muted">${t.t} · ${esc(t.who)} · ${esc(t.p)} · قيّمته <span class="stars-row">${'★'.repeat(t.rt)}</span></span></span><b class="num amt-in ltr">+${fmt(netOf(t.f))}</b></li>`).join('');
+  renderCapEarn();renderRest();
+}
+function renderCapEarn(){
+  $('#ceToday').textContent=fmt(todayNet());$('#ceWeek').textContent=fmt(C.week.slice(0,6).reduce((a,b)=>a+b,0)*1000+todayNet());
+  $('#ceTrips').textContent=C.trips;$('#ceAvg').textContent=fmt(C.trips?C.gross/C.trips:0);
+  $('#ceBreak').innerHTML=`<span>مجموع الأجور</span><span class="num">${fmt(C.gross)}</span><span>الإكراميات</span><span class="num">${fmt(C.tips)}</span><span>المكافآت</span><span class="num">${fmt(C.bonus)}</span><span>عمولة هلا (15%)</span><span class="num neg ltr">−${fmt(todayComm())}</span><span class="tot">صافي اليوم</span><span class="tot num">${fmt(todayNet())} د.ع</span>`;
+  $('#ceBal').textContent=fmt(Math.max(0,C.balance));$('#ceCash').textContent=fmt(C.cash);
+  $('#cePayouts').innerHTML=C.payouts.map(p=>`<li><span class="icon-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7 7 7-7"/></svg></span><span class="grow"><b>${esc(p.to)}</b><br><span class="small muted num">${p.d}</span></span><b class="num">${fmt(p.a)}</b></li>`).join('');
+  renderChart();renderFuel();renderBoard();
+}
+function payout(to){if(C.balance<=0){toast('ما عندك رصيد للتحويل هسه');return;}C.payouts.unshift({d:today(),a:C.balance,to});toast('تم تحويل '+fmt(C.balance)+' د.ع إلى '+to);C.balance=0;renderCapEarn();}
+$('#cePayZain').addEventListener('click',()=>payout('زين كاش'));
+$('#cePayBank').addEventListener('click',()=>payout('مصرف الرافدين'));
+setInterval(()=>{if(onlineSince)renderCap();},60000);
+
+
+/* ================= هلا خط: monthly commute ================= */
+const LN={type:'work',days:new Set([1,2,3,4,0]),pax:1};
+const WDAYS=[{i:6,n:'السبت'},{i:0,n:'الأحد'},{i:1,n:'الاثنين'},{i:2,n:'الثلاثاء'},{i:3,n:'الأربعاء'},{i:4,n:'الخميس'}];
+['lnFrom','lnTo'].forEach((id,j)=>{const sel=$('#'+id);PLACES.forEach(p=>sel.add(new Option(p.n,p.n)));sel.value=j?'الجزائر':'العشار';sel.addEventListener('change',renderLineForm);});
+$$('#lineType button').forEach(b=>b.addEventListener('click',()=>{LN.type=b.dataset.v;$$('#lineType button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  $('#lnPaxLbl').textContent=LN.type==='school'?'عدد الجهال':'عدد الركاب';if(LN.type==='school'){$('#lnGo').value='07:00';$('#lnBack').value='13:00';}else{$('#lnGo').value='07:30';$('#lnBack').value='14:00';}renderLineForm();}));
+$('#lnMinus').addEventListener('click',()=>{LN.pax=Math.max(1,LN.pax-1);renderLineForm();});
+$('#lnPlus').addEventListener('click',()=>{LN.pax=Math.min(6,LN.pax+1);renderLineForm();});
+function linePrice(){const a=placeBy($('#lnFrom').value),b=placeBy($('#lnTo').value);const km=L.latLng(a.c).distanceTo(L.latLng(b.c))/1000*1.3;
+  const per=fare(km,1)*(1+.3*(LN.pax-1));const trips=Math.round(LN.days.size*4.3*2);const normal=per*trips;const monthly=Math.round(normal*.75/1000)*1000;return {km,per,trips,normal,monthly};}
+function renderLineForm(){
+  const d=$('#lnDays');d.innerHTML='';WDAYS.forEach(w=>{const b=document.createElement('button');b.type='button';b.textContent=w.n;if(LN.days.has(w.i))b.className='on';b.addEventListener('click',()=>{LN.days.has(w.i)?LN.days.delete(w.i):LN.days.add(w.i);renderLineForm();});d.appendChild(b);});
+  $('#lnPax').textContent=LN.pax;
+  if($('#lnFrom').value===$('#lnTo').value){$('#lnBreak').innerHTML='<span class="neg" style="grid-column:1/-1">اختار مكانين مختلفين.</span>';return;}
+  const p=linePrice();
+  $('#lnBreak').innerHTML=`<span>عدد الرحلات بالشهر (ذهاب ورجعة)</span><span class="num">${p.trips}</span><span>لو تطلبها رحلة رحلة</span><span class="num"><s>${fmt(p.normal)}</s></span><span class="tot">اشتراك هلا خط بالشهر</span><span class="tot num">${fmt(p.monthly)} د.ع</span><span class="small" style="grid-column:1/-1;color:var(--ok)">توفّر ${fmt(p.normal-p.monthly)} د.ع (25%)</span>`;
+}
+function renderLines(){
+  $('#lnList').innerHTML=S.lines.map((l,i)=>`<li><span class="cap-photo sm">${photoHTML(CAPS[l.cap])}</span><span class="grow"><b>${l.type==='school'?'مدرسة':'دوام'} · ${esc(l.from)} ⇄ ${esc(l.to)}</b><br><span class="small muted">${esc(l.days)} · ذهاب <span class="ltr num">${l.go}</span> ورجعة <span class="ltr num">${l.back}</span> · ${l.pax} ${l.type==='school'?'جهال':'ركاب'}<br>${CAPS[l.cap].female?'الكابتنة':'الكابتن'} ${esc(CAPS[l.cap].name)} · <b class="num">${fmt(l.monthly)}</b> د.ع/شهر</span></span><button class="btn btn-ghost btn-danger small" type="button" data-unline="${i}">إلغاء</button></li>`).join('')||'<li class="muted small">ما عندك اشتراك. سوّي واحد من الفورم.</li>';
+  $$('#lnList [data-unline]').forEach(b=>b.addEventListener('click',()=>{S.lines.splice(+b.dataset.unline,1);renderLines();toast('انلغى الاشتراك من الشهر الجاي');}));
+}
+$('#lineForm').addEventListener('submit',e=>{e.preventDefault();
+  if($('#lnFrom').value===$('#lnTo').value){toast('اختار مكانين مختلفين');return;}
+  if(!LN.days.size){toast('اختار يوم واحد على الأقل');return;}
+  const p=linePrice(),cap=$('#lnLady').checked?'lady':'taxi';
+  S.lines.push({type:LN.type,from:$('#lnFrom').value,to:$('#lnTo').value,days:WDAYS.filter(w=>LN.days.has(w.i)).map(w=>w.n).join('، '),go:$('#lnGo').value,back:$('#lnBack').value,pax:LN.pax,monthly:p.monthly,cap});
+  renderLines();toast((CAPS[cap].female?'تم الاشتراك. الكابتنة ':'تم الاشتراك. الكابتن ')+CAPS[cap].first+' راح يتصل بيك اليوم حتى يتعرف عليك');});
+
+/* ================= captain: going home, rest alert, fuel, leaderboard ================= */
+PLACES.forEach(p=>$('#cHomeSel').add(new Option('البيت: '+p.n,p.n)));$('#cHomeSel').value='الجزائر';
+$('#cHome').addEventListener('change',e=>{$('#cHomeSel').hidden=!e.target.checked;toast(e.target.checked?'راح توصلك بس الطلبات اللي على طريق البيت':'رجعت تستقبل كل الطلبات');});
+C.km=118;
+function renderFuel(){const pr=+$('#fPrice').value||0,cons=+$('#fCons').value||0;if(!$('#fKm').value)$('#fKm').value=Math.round(C.km);const km=+$('#fKm').value||0;
+  const liters=km*cons/100,cost=Math.round(liters*pr/250)*250,net=todayNet()-cost;
+  $('#fOut').innerHTML=`<span>البانزين المصروف</span><span class="num">${liters.toFixed(1)} لتر</span><span>كلفة البانزين</span><span class="num neg ltr">−${fmt(cost)}</span><span class="tot">ربحك الصافي بعد البانزين</span><span class="tot num">${fmt(net)} د.ع</span>`;}
+['fPrice','fCons','fKm'].forEach(id=>$('#'+id).addEventListener('input',renderFuel));
+function renderBoard(){const rows=[{n:'سجاد كاظم',r:4.97,t:402},{n:'زينب علي',r:4.96,t:388},{n:CAPS.taxi.name,r:CAPS.taxi.rating,t:371,me:true},{n:'مرتضى ناصر',r:4.9,t:365},{n:'حيدر جبار',r:4.88,t:340}];
+  $('#board').innerHTML=rows.map((x,i)=>`<li class="${x.me?'me-row':''}"><span class="rank num">${i+1}</span><span class="grow"><b>${esc(x.n)}</b>${x.me?' <span class="chip chip-accent">أنت</span>':''}<br><span class="small muted">★ ${x.r.toFixed(2)} · <span class="num">${x.t}</span> رحلة هالشهر</span></span>${i<3?'<span class="chip chip-ok">مكافأة</span>':''}</li>`).join('');}
+function renderRest(){const mins=C.mins+(onlineSince?Math.floor((Date.now()-onlineSince)/60000):0),h=mins/60;
+  $('#cRest').innerHTML=h>=10?`<span class="chip chip-bad">صارلك ${h.toFixed(1)} ساعة سياقة. استريح شوية حفاظاً على سلامتك</span>`:`تنبيه الاستراحة بعد <b class="num">${(10-h).toFixed(1)}</b> ساعة سياقة.`;}
+
+/* ================= in-trip chat: private, masked, deleted when the trip ends ================= */
+function maskPII(t){
+  const n=String(t).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+  let hidden=false;
+  let out=n.replace(/\+?\d[\d\s\-]{5,}\d/g,()=>{hidden=true;return '[رقم مخفي]';}).replace(/\S+@\S+\.\S+/g,()=>{hidden=true;return '[إيميل مخفي]';});
+  if(/(انستا|انستغرام|instagram|سناب|snap|فيس|facebook|تلي|telegram|واتس|whatsapp)/i.test(n)&&/@|\.com|حساب|يوزر/.test(n)){hidden=true;out='[حساب تواصل مخفي]';}
+  return {text:out,hidden};
+}
+function tripChat(o){
+  const st={open:false,on:false,unread:0,timer:null};
+  const body=$(o.body),root=$(o.root);
+  function add(cls,txt,who){const d=document.createElement('div');d.className='msg '+cls;if(who){const w=document.createElement('span');w.className='who';w.textContent=who;d.appendChild(w);}d.appendChild(document.createTextNode(txt));body.appendChild(d);body.scrollTop=body.scrollHeight;}
+  function setBadge(){$$(o.btn).forEach(b=>b.classList.toggle('unread',st.unread>0));}
+  st.start=(title,peerName,quick)=>{st.on=true;st.peer=peerName;body.innerHTML='';$(o.title).textContent=title;
+    const q=$(o.quick);q.innerHTML='';quick.forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.addEventListener('click',()=>st.send(t));q.appendChild(b);});
+    add('sys','بداية المحادثة · الأسماء الأولى بس، ورقمك ما يبين');};
+  st.toggle=()=>{if(!st.on)return;st.open=!st.open;root.hidden=!st.open;if(st.open){st.unread=0;setBadge();body.scrollTop=body.scrollHeight;root.scrollIntoView({block:'nearest',behavior:reduce?'auto':'smooth'});setTimeout(()=>$(o.input).focus({preventScroll:true}),50);}};
+  st.peerSay=(txt,delay)=>{clearTimeout(st.timer);st.timer=setTimeout(()=>{if(!st.on)return;add('bot',txt,st.peer);if(!st.open){st.unread++;setBadge();toast('رسالة جديدة من '+st.peer+': '+txt);}},delay);};
+  st.send=txt=>{txt=String(txt).trim();if(!txt||!st.on)return;const m=maskPII(txt);add('mine',m.text);
+    if(m.hidden)add('sys','حفاظاً على الخصوصية نخفي أرقام الهواتف والحسابات. استخدم زر «اتصال» عبر رقم هلا المؤقت.');
+    st.peerSay(o.reply(txt),reduce?50:1300);};
+  st.end=()=>{st.on=false;st.open=false;st.unread=0;clearTimeout(st.timer);body.innerHTML='';root.hidden=true;setBadge();};
+  $(o.form).addEventListener('submit',e=>{e.preventDefault();st.send($(o.input).value);$(o.input).value='';});
+  return st;
+}
+const proxyNum=()=>'+964 780 000 '+(7000+Math.floor(Math.random()*999));
+/* rider side: the captain replies */
+const RCHAT=tripChat({root:'#rChat',body:'#rChatBody',title:'#rChatTitle',quick:'#rChatQuick',form:'#rChatForm',input:'#rChatIn',btn:'#panel [data-act="msg"]',
+  reply:t=>{const tt=norm(t),eta=$('#liveEta').textContent||'';
+    if(has(tt,['وين','شكد','باقي','وصلت']))return /\d/.test(eta)?gx(`بالطريق، باقي تقريباً ${eta}.`):gx('وصلت، آني واكف كدامك.');
+    if(has(tt,['باب','واكف','طالع','اطلع','نازل']))return gx('تمام، شفت الموقع. دقايق وأكون عندك.');
+    if(has(tt,['قميص','لابس','شكلي','لون']))return gx('تمام، راح أعرفك. آني بسيارة ')+CAPTAIN.color+'.';
+    if(has(tt,['تبريد','مكيف','برد','حار']))return 'التبريد شغّال على الآخر، تدلل.';
+    if(has(tt,['شنط','جنط','اغراض','حقائب']))return 'ماكو مشكلة، الصندوق فارغ.';
+    if(has(tt,['شكرا','مشكور','تسلم','الله يخليك']))return 'العفو، بالخدمة.';
+    return 'تمام، وصلت رسالتك.';}});
+/* captain side: the rider replies */
+const CCHAT=tripChat({root:'#cChat',body:'#cChatBody',title:'#cChatTitle',quick:'#cChatQuick',form:'#cChatForm',input:'#cChatIn',btn:'#capPanel [data-cact="msg"]',
+  reply:t=>{const tt=norm(t);
+    if(has(tt,['وين','مكانك','ما لكيت','مالكيت','وصلت']))return 'آني كدام الباب الأخضر، يم المحل.';
+    if(has(tt,['زحمه','زحمة','تاخر','دقايق']))return 'ماكو مشكلة، أنتظرك.';
+    if(has(tt,['رمز','الرمز']))return 'تمام، أكولك الرمز من أصعد.';
+    if(has(tt,['شكرا','مشكور','تسلم']))return 'الله يخليك كابتن.';
+    return 'تمام كابتن.';}});
+
+/* ================= welcome message (by age + chosen title + time) ================= */
+function welcomeMsg(cargo){
+  const r=S.rider,age=r.age||0,cap='الكابتن '+CAPTAIN.first;
+  let t=r.title||'none';
+  const fem=t==='ukht'||t==='hajia';
+  const h=new Date().getHours(),day=new Date().getDay();
+  let pre=occasion();
+  if(current&&current.other)return pre+gx(`هلا بيك. ${cap} رايح ياخذ ${current.other.name}، ودزّينا الهم مسج بتفاصيل الرحلة ورمز الأمان. تكدر تتابع الرحلة من هنا.`);
+  if(pre){}
+  else if(day===5)pre='جمعة مباركة، ';
+  else if(h<12)pre='صباح الخير والورد، ';
+  else if(h>=18)pre=fem?'مساچ الله بالخير، ':'مساك الله بالخير، ';
+  let body;
+  if(t==='haji')body=`هلا بالحجي، الله يحفظك. ${cap} جايك، دقايق ويوصل.`;
+  else if(t==='hajia')body=`هلا بالحجية، تدللين. ${cap} جايلچ بالطريق.`;
+  else if(t==='ukht')body=`هلا بيچ، ${cap} بالطريق. تكدرين تشاركين الرحلة ويه أهلچ من زر «شارك الرحلة».`;
+  else if(t==='akh')body=age&&age<30?`هلا عيوني، ${cap} بالطريق لا تتأخر عليه.`:`هلا بيك أخوي، ${cap} بالطريق الك.`;
+  else body=age>=40?`هلا بالخير، الله يحفظك. ${cap} جايك، دقايق ويوصل.`:`هلا بيك، ${cap} بالطريق الك.`;
+  if(cargo)body+=fem?' رتّبي الأغراض كرب الباب حتى يخلص التحميل بسرعة.':' رتّب الأغراض كرب الباب حتى يخلص التحميل بسرعة.';
+  return gx(pre+body);
+}
+function occasion(){try{const p=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{month:'numeric',day:'numeric'}).formatToParts(new Date());const m=+p.find(x=>x.type==='month').value,d=+p.find(x=>x.type==='day').value;
+  if(m===9)return 'رمضان كريم، ';if((m===10&&d<=3)||(m===12&&d>=10&&d<=13))return 'عيدكم مبارك، ';}catch(e){}return '';}
+
+/* ================= quick support chat (scripted demo of the AI assistant) ================= */
+const BOT=APP==='captain'?{name:'زهراء',av:'ز',human:'حسين'}:{name:'كاظم',av:'ك',human:'نور'};
+const norm=t=>String(t).replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/،/g,',').toLowerCase();
+const has=(t,ws)=>{const n=norm(t);return ws.some(w=>n.includes(norm(w)));};
+const WORDNUM={'الف':1,'الفين':2,'ثلاث':3,'تلاث':3,'اربع':4,'خمس':5,'ست':6,'سبع':7,'ثمان':8,'ثمن':8,'تسع':9,'عشر':10};
+function parseAmount(t){
+  const n=norm(t);let m=n.match(/(\d[\d,\.]*)/);
+  if(m){let v=parseFloat(m[1].replace(/,/g,''));if(v<100&&/الف|الاف|تالاف|k/.test(n))v*=1000;return v>=250&&v<=500000?Math.round(v):null;}
+  if(/الفين/.test(n))return 2000;
+  for(const [w,v] of Object.entries(WORDNUM)){if(w!=='الف'&&w!=='الفين'&&n.includes(w)&&/الف|الاف|تالاف/.test(n))return v*1000;}
+  if(/(^|\s)الف(\s|$)/.test(n))return 1000;
+  return null;
+}
+const ticket=()=>'#H-'+Math.floor(1000+Math.random()*9000);
+const URGENT=['حادث','خطر','تحرش','ضربني','اعتداء','طوارئ','خايف','خايفة','مسلح','سرقة','سرقني'];
+const RIDER_RULES=[
+  {k:URGENT,urgent:true,r:()=>`سلامتك أهم شي. إذا بخطر هسه:\nالشرطة 104 · الإسعاف 122 · الدفاع المدني 115\nوحوّلتك لموظف حقيقي هسه حتى يتابع وياك، وتكدر تشارك موقعك من زر «شارك الرحلة».`},
+  {k:['زايد','غالي','سعر','اجرة','أجرة','حسبني','حسابي غلط','فلوس زايدة','مفروض','اخذ مني','أخذ مني','طلب مني'],next:'fare',r:()=>{const h=S.history[0];return `لا يهمك. آخر رحلة إلك كانت ${h.from} ← ${h.to} بـ ${fmt(h.fare)} د.ع.\nإذا تحس السعر زايد، كلّي شكد كان المفروض، وأفتحلك طلب مراجعة. وإذا طلع الحق وياك يرجعلك الفرق بالمحفظة خلال 24 ساعة.`;}},
+  {k:['نسيت','ضاع','ضايع','جنطة','جنطتي','موبايلي','محفظتي','غرض'],next:'lost',r:()=>`ولا يهمك، هسه أبلغ الكابتن ${CAPS[S.history[0].cap||'taxi'].first} من آخر رحلة.\nكلّي شنو الغرض ولونه، وأقرب مكان يناسبك تستلمه بيه. التوصيل للغرض يكون بأجرة مشوار عادي.`},
+  {k:['تأخر','متأخر','ما اجه','ما إجه','وين الكابتن','بطيء','واكف'],r:()=>`حقك علينا. تكدر تشوف مكان الكابتن مباشرة على الخريطة.\nإذا تأخر أكثر من 10 دقايق عن الوقت المكتوب، تكدر تلغي بدون رسوم، وأضيفلك كود خصم HALA10 للمرة الجاية.`},
+  {k:['الغي','ألغي','الغاء','إلغاء','كنسل'],r:()=>`الإلغاء مجاني خلال أول دقيقتين من الطلب.\nبعدها تنحسب 1,000 د.ع، إلا إذا الكابتن تأخر أكثر من 10 دقايق، فيكون الإلغاء مجاني.`},
+  {k:['محفظة','شحن','بطاقة','زين كاش','دفع','ادفع','رصيد'],r:()=>`رصيد محفظتك هسه ${fmt(S.balance)} د.ع.\nتكدر تشحن من «المحفظة»، أو تدفع نقداً أو بالبطاقة أو زين كاش. تغيّر طريقة الدفع قبل لا تطلب.`},
+  {k:['كود','خصم','عرض','تخفيض'],r:()=>`عندك كود HALA10: خصم 10% لحد 3,000 د.ع.\nاكتبه بخانة «كود خصم» قبل لا تطلب. وإذا تدعي صديق تاخذ 5,000 د.ع.`},
+  {k:['نقل','اثاث','أثاث','ثلاجة','غسالة','عمال','بيكب','لوري','ستوتة','طابوق','سمنت'],r:()=>`خدمة النقل داخل البصرة: تختار «نقل وتوصيل» وتحدد الأغراض، والتطبيق يقترح السيارة المناسبة (ستوتة، بيكب، لوري صغير).\nالعامل الواحد بـ 5,000 د.ع، والتغليف بـ 5,000، وتكدر تحجز بموعد.`},
+  {k:['شكوى','اشتكي','أشتكي','اسلوب','أسلوب','سواق','سايق','الكابتن','دخن','تدخين'],next:'complaint',r:()=>`آسفين على اللي صار. كلّي شنو صار بالتفصيل وأي رحلة، وأرفع الشكوى لقسم الجودة.\nنراجع كل شكوى خلال 24 ساعة، والكابتن ما يعرف منو اشتكى.`},
+  {k:['حساب','رقمي','اسمي','بياناتي','احذف','حذف'],next:'del',r:()=>`تكدر تعدّل اسمك ورقمك وعمرك من «حسابي». وإذا تريد تحذف حسابك وكل بياناتك، كلّي وأفتحلك الطلب، وينحذف خلال 7 أيام.`},
+  {k:['شكرا','شكراً','مشكور','تسلم','عاشت','الله يخليك'],r:()=>'العفو عيوني، بالخدمة دايماً. إذا احتجت أي شي آني هنا.'},
+  {k:['هلا','مرحبا','السلام','شلونك','شونك','صباح','مساء'],r:()=>`هلا بيك وعليكم السلام. آني ${BOT.name}، شنو أكدر أخدمك؟`},
+];
+const CAP_RULES=[
+  {k:URGENT,urgent:true,r:()=>`سلامتك أهم شي. إذا بخطر هسه:\nالشرطة 104 · الإسعاف 122 · الدفاع المدني 115\nوحوّلتك لموظف حقيقي هسه حتى يتابع وياك.`},
+  {k:['ارباح','أرباح','تحويل','رصيد','فلوسي','سحب'],r:()=>`صافي أرباحك اليوم ${fmt(todayNet())} د.ع، ورصيدك الجاهز للتحويل ${fmt(Math.max(0,C.balance))} د.ع.\nتحوّله من «الأرباح» لزين كاش أو البنك، ويوصل خلال ساعة بأوقات الدوام.`},
+  {k:['عمولة','كاش','نقد'],r:()=>`عمولة هلا 15% من كل رحلة. برحلات الكاش، العمولة تنخصم من رصيدك عند هلا، وبالرحلات الإلكترونية ينضاف صافي ربحك مباشرة.\nالكاش اللي بيدك اليوم: ${fmt(C.cash)} د.ع.`},
+  {k:['مستمسكات','تأمين','اجازة','إجازة','سنوية','فحص','وثيقة'],r:()=>`عندك وثيقة التأمين تنتهي بعد 18 يوم، وفحص السيارة الدوري مطلوب قبل 30/11.\nصوّر الوثيقة الجديدة وارفعها من «حسابي ← المستمسكات»، ونراجعها خلال يوم.`},
+  {k:['زبون','ما نزل','ما اجه','ما إجه','انتظار','انتظرت'],r:()=>`إذا انتظرت أكثر من 5 دقايق والزبون ما إجه، اضغط «الزبون ما إجه». الرحلة تنلغي وتاخذ رسوم انتظار 2,000 د.ع.`},
+  {k:['طلبات','ماكو طلبات','قليلة','ماكو شغل'],r:()=>`روح للمناطق البرتقالية بالخريطة، بيها طلب عالي وأسعار ×1.2 لـ ×1.3 (العشار، ساحة سعد، الجزائر).\nوأكثر وقت بيه طلبات: من 7 لـ 9 الصبح، ومن 4 لـ 9 بالليل.`},
+  {k:['عطل','علك','تعليق','ما يشتغل','خريطة','gps','جي بي اس'],r:()=>`جرّب تسكّر التطبيق وتفتحه، وتأكد إن الموقع (GPS) مفعّل للتطبيق.\nإذا بقت المشكلة، دزلي سكرين شوت وأرفعها للفريق التقني.`},
+  {k:['شكرا','شكراً','مشكور','تسلم','عاشت','الله يخليك'],r:()=>'العفو يا بطل، الله وياك بدوامك.'},
+  {k:['هلا','مرحبا','السلام','شلونك','شونك','صباح','مساء'],r:()=>`هلا بيك يا كابتن وعليكم السلام. آني ${BOT.name}، شنو تحتاج؟`},
+];
+const QUICK=APP==='captain'?['متى تتحول أرباحي؟','الزبون ما إجه','ماكو طلبات','تجديد التأمين','عمولة الكاش']:['الأجرة طلعت زايدة','نسيت غرض بالسيارة','الكابتن تأخر','شلون ألغي الطلب؟','عندي كود خصم؟','نقل أثاث'];
+let chatStarted=false,human=false;
+/* follow-up answers: the bot remembers what it just asked */
+let pending=null,misses=0;
+const FOLLOW={
+  fare:txt=>{const v=parseAmount(txt);const h=S.history[0];
+    if(v===null)return {again:true,r:'كلّي المبلغ اللي كان المفروض بالأرقام، مثلاً 5000 أو ٥٠٠٠.'};
+    const diff=h.fare-v;
+    if(diff<=0)return {r:`الرحلة انحسبت ${fmt(h.fare)} د.ع، يعني مو أكثر من ${fmt(v)}. إذا تقصد رحلة ثانية، كلّي منين لوين.`};
+    return {r:`تمام، فتحتلك طلب مراجعة رقم ${ticket()}.\nالرحلة انحسبت ${fmt(h.fare)} د.ع والمفروض ${fmt(v)} د.ع، يعني الفرق ${fmt(diff)} د.ع.\nنراجع المسار، وإذا طلع الحق وياك يرجعلك الفرق بالمحفظة خلال 24 ساعة ويوصلك إشعار.`};},
+  lost:txt=>({r:`تمام، بلّغت الكابتن ${CAPS[S.history[0].cap||'taxi'].first} عن: «${txt}». رقم البلاغ ${ticket()}.\nراح يتواصل وياك خلال ساعة حتى تتفقون على مكان ووقت الاستلام.`}),
+  complaint:txt=>({r:`وصلت شكوتك، رقمها ${ticket()}. قسم الجودة يراجعها خلال 24 ساعة ويتصل بيك.\nوالكابتن ما يعرف منو اشتكى.`}),
+  del:txt=>has(txt,['نعم','اي','ايه','أكيد','اكيد','احذف'])?{r:`تمام، فتحت طلب حذف الحساب ${ticket()}. ينحذف حسابك وكل بياناتك خلال 7 أيام، وإذا غيرت رأيك كلّي قبلها.`}:{r:'تمام، ما راح نحذف شي. إذا تحتاج أي شي ثاني آني هنا.'},
+};
+
+function addMsg(cls,txt,who){const b=$('#chatBody');const d=document.createElement('div');d.className='msg '+cls;if(who){const w=document.createElement('span');w.className='who';w.textContent=who;d.appendChild(w);}d.appendChild(document.createTextNode(txt));b.appendChild(d);b.scrollTop=b.scrollHeight;}
+function botSay(txt,cls='bot',who){const b=$('#chatBody');const t=document.createElement('div');t.className='typing';t.textContent=(who||BOT.name)+' دا يكتب…';b.appendChild(t);b.scrollTop=b.scrollHeight;
+  setTimeout(()=>{t.remove();addMsg(cls,txt,who||BOT.name+' · دعم ذكي');},reduce?50:Math.min(1600,500+txt.length*8));}
+function greetName(){if(APP==='captain')return 'يا كابتن '+CAPS.taxi.first;const t=S.rider.title;return t==='haji'?'حجي':t==='hajia'?'حجية':t==='ukht'?S.rider.name.split(' ')[0]:S.rider.name.split(' ')[0];}
+function openSupport(){
+  $('#botName').textContent=BOT.name;$('#botName2').textContent=BOT.name;$('#botAv').textContent=BOT.av;
+  if(chatStarted)return;chatStarted=true;
+  $('#chatQuick').innerHTML='';QUICK.forEach(q=>{const b=document.createElement('button');b.type='button';b.textContent=q;b.addEventListener('click',()=>userSay(q));$('#chatQuick').appendChild(b);});
+  addMsg('sys','اليوم');
+  botSay(`هلا وياك، ${BOT.name} دعم ذكي سريع. شنو أكدر أخدمك اليوم؟`);
+}
+function toHuman(reason){
+  if(human)return;human=true;
+  addMsg('sys',`تم تحويلك لموظف خدمة ${APP==='captain'?'الكباتن':'الزبائن'}`);
+  setTimeout(()=>addMsg('human',`هلا بيك، آني ${BOT.human} من فريق هلا. شفت المحادثة كلها و${reason?'دا أتابع حالتك هسه.':'هسه وياك، تفضّل.'}\nوإذا تحب نتصل بيك: ${APP==='captain'?'+964 780 000 4253':'+964 780 000 4252'}`,BOT.human+' · موظف حقيقي'),reduce?50:2500);
+}
+function userSay(txt){
+  txt=txt.trim();if(!txt)return;addMsg('mine',txt);
+  if(human){setTimeout(()=>addMsg('human','وصلت رسالتك، لحظات وأرد عليك.',BOT.human+' · موظف حقيقي'),reduce?50:1500);return;}
+  const rules=APP==='captain'?CAP_RULES:RIDER_RULES;
+  const urgent=rules.find(x=>x.urgent&&has(txt,x.k));
+  if(urgent){pending=null;botSay(urgent.r(),'bot urgent');setTimeout(()=>toHuman(true),reduce?100:1800);return;}
+  if(pending){const p=pending;const res=FOLLOW[p](txt);pending=res.again?p:null;misses=0;botSay(res.r);return;}
+  const r=rules.find(x=>!x.urgent&&has(txt,x.k));
+  if(r){misses=0;if(r.next==='fare'&&parseAmount(txt)!==null){pending='fare';userSayFollow(txt);return;}pending=r.next||null;botSay(r.r());return;}
+  if(parseAmount(txt)!==null&&APP!=='captain'){pending='fare';userSayFollow(txt);return;}
+  misses++;
+  if(misses>=2){botSay('يبين سؤالك يحتاج موظف يتابعه. حوّلتك هسه لواحد من فريق هلا.');setTimeout(()=>toHuman(false),reduce?100:1800);misses=0;}
+  else botSay('ما فهمت عليك زين. تكدر تكتبها بطريقة ثانية؟ أو اختار من الأزرار تحت.');
+}
+function userSayFollow(txt){const res=FOLLOW.fare(txt);pending=res.again?'fare':null;botSay(res.r);}
+$('#chatForm').addEventListener('submit',e=>{e.preventDefault();userSay($('#chatIn').value);$('#chatIn').value='';});
+$('#toHuman').addEventListener('click',()=>toHuman(false));
+
+/* ================= boot ================= */
+function renderAll(){renderLineForm();renderLines();renderWallet();renderMethods();renderTx();renderRidePay();renderRider();renderCap();renderHistory();renderChips();renderTrip();fillCaptain();}
+Object.values(CAPS).forEach(c=>{const im=new Image();im.onload=()=>{c.hasPhoto=true;fillCaptain();renderHistory();if(myCar)myCar.setIcon(taxiIcon(true));if(capMarker)capMarker.setIcon(taxiIcon(true,CAPS.taxi));};im.src=c.photo;});
+renderAll();setStep('plan');setCStep('offline');
+setPoint('a',L.latLng(PLACES[0].c),'البيت · العشار',true);
+setPoint('b',L.latLng(PLACES[5].c),'الجزائر');
+setMode('b');
+route();
+})();
+</script>
+</body>
+</html>
